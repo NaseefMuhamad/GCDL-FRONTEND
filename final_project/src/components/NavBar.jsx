@@ -8,19 +8,19 @@ function Navbar() {
       <div className="navbar-container">
         <div className="navbar-logo">GCDL</div>
         <ul className="navbar-links">
-          <li><NavLink to="/" className="nav-link">Dashboard</NavLink></li>
+          <li><NavLink to="/" className="navbar-link">Dashboard</NavLink></li>
           {user ? (
             <>
-              <li><NavLink to="/procurement" className="nav-link">Procurement</NavLink></li>
-              <li><NavLink to="/sales" className="nav-link">Sales</NavLink></li>
-              <li><NavLink to="/credit-sales" className="nav-link">Credit Sales</NavLink></li>
-              <li><NavLink to="/stock" className="nav-link">Stock</NavLink></li>
-              <li><button onClick={logout} className="nav-button">Logout</button></li>
+              <li><NavLink to="/procurement" className="navbar-link">Procurement</NavLink></li>
+              <li><NavLink to="/sales" className="navbar-link">Sales</NavLink></li>
+              <li><NavLink to="/credit-sales" className="navbar-link">Credit Sales</NavLink></li>
+              <li><NavLink to="/stock" className="navbar-link">Stock</NavLink></li>
+              <li><button onClick={logout} className="navbar-btn btn btn-secondary">Logout</button></li>
             </>
           ) : (
             <>
-              <li><NavLink to="/login" className="nav-link">Login</NavLink></li>
-              <li><NavLink to="/signup" className="nav-link">Signup</NavLink></li>
+              <li><NavLink to="/login" className="navbar-link">Login</NavLink></li>
+              <li><NavLink to="/signup" className="navbar-link">Signup</NavLink></li>
             </>
           )}
         </ul>

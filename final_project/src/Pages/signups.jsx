@@ -39,7 +39,7 @@ function Signup() {
       <div className="login-card">
         <h2 className="login-title">Signup</h2>
         {error && <div className="form-error">{error}</div>}
-        {success && <div className="form-error" style={{ color: 'var(--secondary)', backgroundColor: 'var(--secondary-light)' }}>{success}</div>}
+        {success && <div className="form-success">{success}</div>}
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label htmlFor="user_name">Username</label>
