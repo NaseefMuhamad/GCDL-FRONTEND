@@ -12,7 +12,7 @@ import Procurement from './pages/Procurement';
 import Sales from './pages/Sales';
 import CreditSales from './pages/CreditSales';
 import Stock from './pages/Stock';
-import Login from './pages/Login';
+import Login from './Pages/Login';
 
 const App = () => {
   const { user } = useAuth();
