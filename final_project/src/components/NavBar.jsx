@@ -18,7 +18,10 @@ function Navbar() {
               <li><button onClick={logout} className="nav-button">Logout</button></li>
             </>
           ) : (
-            <li><NavLink to="/login" className="nav-link">Login</NavLink></li>
+            <>
+              <li><NavLink to="/login" className="nav-link">Login</NavLink></li>
+              <li><NavLink to="/signup" className="nav-link">Signup</NavLink></li>
+            </>
           )}
         </ul>
       </div>
