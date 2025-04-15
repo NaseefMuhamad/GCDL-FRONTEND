@@ -3,15 +3,15 @@ import Chart from "../components/Chart";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 
-function CEODashboard() {
+function ManagerDashboard() {
   const { user } = useAuth();
-  const { data: analyticsData, loading, error, fetchData } = useApi("/api/ceo-analytics");
+  const { data: analyticsData, loading, error, fetchData } = useApi(/api/manager-analytics?branch=${user.branch});
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  if (user.role !== "ceo") {
+  if (user.role !== "manager") {
     return <div>Access Denied</div>;
   }
 
@@ -71,7 +71,14 @@ function CEODashboard() {
 
   return (
     <div className="dashboard-container">
-      <h2 className="dashboard-title">CEO Dashboard</h2>
+      <h2 className="dashboard-title">Manager Dashboard - {user.branch.charAt(0).toUpperCase() + user.branch.slice(1)}</h2>
+      <div className="dashboard-image-container">
+        <img
+          src="/images/branch-office.jpg"
+          alt="Branch Office"
+          className="dashboard-image"
+        />
+      </div>
       <div className="dashboard-kpi-grid">
         <div className="dashboard-kpi-card">
           <h3>Total Sales</h3>
@@ -127,4 +134,4 @@ function CEODashboard() {
   );
 }
 
-export default CEODashboard;
+export default ManagerDashboard;
