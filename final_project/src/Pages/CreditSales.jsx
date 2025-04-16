@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useApi } from "../hooks/useApi";
-import FormError from "../components/FormError";
-import LiveClock from "../components/LiveClock";
+import FormError from "./FormError";
+import LiveClock from "./LiveClock";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { createObjectCsvStringifier } from 'csv-writer';
@@ -31,7 +31,7 @@ function CreditSales() {
         { text: 'Credit Sales Records', style: 'header' },
         {
           ul: data.map((item, index) => ({
-            text: `${index + 1}. ${item.produceName} | ${item.tonnage} tons | $${item.amountDue} | ${item.buyerName} | ${item.nationalId} | ${item.dueDate}`,
+            text: ${index + 1}. ${item.produceName} | ${item.tonnage} tons | $${item.amountDue} | ${item.buyerName} | ${item.nationalId} | ${item.dueDate},
             margin: [0, 5, 0, 5],
           })),
         },

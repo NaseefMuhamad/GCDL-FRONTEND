@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import Chart from "../components/Chart";
+import Chart from "./Chart";
+import LiveClock from "./LiveClock";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 
 function ManagerDashboard() {
   const { user } = useAuth();
-  const { data: analyticsData, loading, error, fetchData } = useApi("/api/manager-analytics");
+  const { data: analyticsData, loading, error, fetchData } = useApi(/api/manager-analytics?branch=${user.branch});
 
   useEffect(() => {
     fetchData();
@@ -31,6 +32,7 @@ function ManagerDashboard() {
         borderColor: "#1e40af",
         backgroundColor: "rgba(30, 64, 175, 0.2)",
         fill: true,
+        tension: 0.4,
       },
     ],
   };
@@ -42,6 +44,8 @@ function ManagerDashboard() {
         label: "Stock (tons)",
         data: [10, 8, 15],
         backgroundColor: "#1e40af",
+        borderColor: "#1e40af",
+        borderWidth: 1,
       },
     ],
   };
@@ -55,14 +59,15 @@ function ManagerDashboard() {
         borderColor: "#059669",
         backgroundColor: "rgba(5, 150, 105, 0.2)",
         fill: true,
+        tension: 0.4,
       },
     ],
   };
 
   const chartOptions = {
-    responsive: true,
     plugins: {
       legend: { position: "top" },
+      title: { display: true },
     },
   };
 
@@ -71,7 +76,17 @@ function ManagerDashboard() {
 
   return (
     <div className="dashboard-container">
-      <h2 className="dashboard-title">Manager Dashboard</h2>
+      <h2 className="dashboard-title">Manager Dashboard - {user.branch.charAt(0).toUpperCase() + user.branch.slice(1)}</h2>
+      <div className="live-clock-container">
+        <LiveClock />
+      </div>
+      <div className="dashboard-image-container">
+        <img
+          src="/images/branch-office.jpg"
+          alt="Branch Office"
+          className="dashboard-image"
+        />
+      </div>
       <div className="dashboard-kpi-grid">
         <div className="dashboard-kpi-card">
           <h3>Total Sales</h3>
@@ -90,7 +105,7 @@ function ManagerDashboard() {
           <p>{kpis.userCount}</p>
         </div>
       </div>
-      <div className="dashboard-chart-container">
+      <div className="chart-container">
         <h3>Sales Trend</h3>
         <Chart
           type="line"
@@ -101,7 +116,7 @@ function ManagerDashboard() {
           }}
         />
       </div>
-      <div className="dashboard-chart-container">
+      <div className="chart-container">
         <h3>Stock Levels</h3>
         <Chart
           type="bar"
@@ -112,7 +127,7 @@ function ManagerDashboard() {
           }}
         />
       </div>
-      <div className="dashboard-chart-container">
+      <div className="chart-container">
         <h3>Procurement Trend</h3>
         <Chart
           type="line"
