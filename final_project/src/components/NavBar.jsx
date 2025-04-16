@@ -1,86 +1,63 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import LiveClock from './LiveClock';
 
-function Navbar() {
-  const { user, logout } = useAuth();
+function NavBar() {
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [theme, setTheme] = useState('light');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.body.setAttribute('data-theme', savedTheme);
-
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.body.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
-
-  const handleLogout = () => {
+  function handleLogout() {
     logout();
     navigate('/login');
-  };
+  }
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <div className="navbar-logo">GCDL</div>
-        <ul className="navbar-links">
-          <li><NavLink to="/dashboard" className="nav-link">Dashboard</NavLink></li>
-
-          {user ? (
+    <nav style={{ background: '#333', color: '#fff', padding: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img
+            src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
+            alt="GCDL Logo"
+            style={{ width: '40px', marginRight: '10px' }}
+          />
+          <Link to="/" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>GCDL</Link>
+          {user?.role === 'ceo' && (
             <>
-              {(user.role === 'ceo' || user.role === 'manager') && (
-                <li><NavLink to="/procurement" className="nav-link">Procurement</NavLink></li>
-              )}
-              {(user.role === 'ceo' || user.role === 'manager' || user.role === 'sales_agent') && (
-                <>
-                  <li><NavLink to="/sales" className="nav-link">Sales</NavLink></li>
-                  <li><NavLink to="/credit-sales" className="nav-link">Credit Sales</NavLink></li>
-                  <li><NavLink to="/stock" className="nav-link">Stock</NavLink></li>
-                </>
-              )}
-              <li><button onClick={toggleTheme} className="theme-toggle">{theme === 'light' ? '🌙' : '☀'}</button></li>
-
-              {/* 🔽 User Dropdown */}
-              <li className="user-dropdown" ref={dropdownRef}>
-                <button onClick={() => setDropdownOpen(!dropdownOpen)} className="nav-button">
-                  {user.username || user.name || 'User'} ⬇
-                </button>
-                {dropdownOpen && (
-                  <ul className="dropdown-menu">
-                    <li><NavLink to="/profile" className="dropdown-link">View Profile</NavLink></li>
-                    <li><NavLink to="/settings" className="dropdown-link">Settings</NavLink></li>
-                    <li><button onClick={handleLogout} className="dropdown-link">Logout</button></li>
-                  </ul>
-                )}
-              </li>
-            </>
-          ) : (
-            <>
-              <li><NavLink to="/login" className="nav-link">Login</NavLink></li>
-              <li><NavLink to="/signup" className="nav-link">Signup</NavLink></li> {/* ✅ Added Signup link */}
-              <li><button onClick={toggleTheme} className="theme-toggle">{theme === 'light' ? '🌙' : '☀'}</button></li>
+              <Link to="/ceo-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>CEO Dashboard</Link>
+              <Link to="/procurement" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Procurement</Link>
+              <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
+              <Link to="/credit-sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Credit Sales</Link>
             </>
           )}
-        </ul>
+          {user?.role === 'manager' && (
+            <>
+              <Link to="/manager-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Manager Dashboard</Link>
+              <Link to="/procurement" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Procurement</Link>
+              <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
+              <Link to="/credit-sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Credit Sales</Link>
+            </>
+          )}
+          {user?.role === 'sales_agent' && (
+            <Link to="/sales-agent-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales Agent Dashboard</Link>
+          )}
+        </div>
+        <div>
+          <LiveClock />
+          {user ? (
+            <>
+              <span style={{ marginRight: '20px' }}>Welcome, {user.username} ({user.role})</span>
+              <button onClick={handleLogout} style={{ background: '#ff4444', color: '#fff', border: 'none', padding: '5px 10px' }}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link to="/login" style={{ color: '#fff', textDecoration: 'none' }}>Login</Link>
+          )}
+        </div>
       </div>
     </nav>
   );
 }
 
-export default Navbar;
+export default NavBar;
