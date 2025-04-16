@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 function CEODashboard() {
   const { user } = useAuth();
   const [branchFilter, setBranchFilter] = useState("all");
-  const { data: analyticsData, loading, error, execute } = useApi(/api/ceo-analytics?branch=${branchFilter});
+  const { data: analyticsData, loading, error, execute } = useApi(`/api/ceo-analytics?branch=${branchFilter}`);
 
   useEffect(() => {
     execute({}, "GET");
@@ -81,7 +81,13 @@ function CEODashboard() {
       <div className="live-clock-container">
         <LiveClock />
       </div>
-      <p className="welcome-message">Welcome, CEO! Here's the overview for {branchFilter === "all" ? "both branches" : branchFilter.charAt(0).toUpperCase() + branchFilter.slice(1)}.</p>
+      <p className="welcome-message">
+        Welcome, CEO! Here's the overview for{" "}
+        {branchFilter === "all"
+          ? "both branches"
+          : branchFilter.charAt(0).toUpperCase() + branchFilter.slice(1)}
+        .
+      </p>
       <div className="branch-filter">
         <label htmlFor="branch-select">Select Branch: </label>
         <select
@@ -127,7 +133,10 @@ function CEODashboard() {
           data={salesTrend}
           options={{
             ...chartOptions,
-            plugins: { ...chartOptions.plugins, title: { display: true, text: "Sales Over Time" } },
+            plugins: {
+              ...chartOptions.plugins,
+              title: { display: true, text: "Sales Over Time" },
+            },
           }}
         />
       </div>
@@ -138,7 +147,10 @@ function CEODashboard() {
           data={stockLevels}
           options={{
             ...chartOptions,
-            plugins: { ...chartOptions.plugins, title: { display: true, text: "Stock by Produce" } },
+            plugins: {
+              ...chartOptions.plugins,
+              title: { display: true, text: "Stock by Produce" },
+            },
           }}
         />
       </div>
@@ -146,10 +158,13 @@ function CEODashboard() {
         <h3>Procurement Trend</h3>
         <Chart
           type="line"
-          data={procurementTrend]
+          data={procurementTrend}
           options={{
             ...chartOptions,
-            plugins: { ...chartOptions.plugins, title: { display: true, text: "Procurement Over Time" } },
+            plugins: {
+              ...chartOptions.plugins,
+              title: { display: true, text: "Procurement Over Time" },
+            },
           }}
         />
       </div>
