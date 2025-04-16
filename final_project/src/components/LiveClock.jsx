@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
 function LiveClock() {
-  const [time, setTime] = useState(new Date().toLocaleTimeString());
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
 
-  useEffect(function() {
-    const timer = setInterval(function() {
-      setTime(new Date().toLocaleTimeString());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
-    return function() {
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, []);
 
-  return <span style={{ marginRight: '20px' }}>{time}</span>;
+  return (
+    <span className="live-clock">{currentTime}</span>
+  );
 }
 
 export default LiveClock;
