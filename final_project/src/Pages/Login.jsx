@@ -1,66 +1,57 @@
-import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
-import LiveClock from './LiveClock.jsx';
+import FormError from '../components/FormError.jsx';
 
-function NavBar() {
-  const { user, logout } = useContext(AuthContext);
+function Login() {
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
 
-  function handleLogout() {
-    logout();
-    navigate('/login');
+  function handleChange(e) {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    try {
+      await login(formData.username, formData.password);
+      navigate('/ceo-dashboard'); // Redirect to a default dashboard; adjust as needed
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   return (
-    <nav style={{ background: '#333', color: '#fff', padding: '10px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img
-            src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
-            alt="GCDL Logo"
-            style={{ width: '40px', marginRight: '10px' }}
+    <div className="form-container">
+      <h2>Login</h2>
+      {error && <FormError errors={[error]} />}
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Username:</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
           />
-          <Link to="/" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>GCDL</Link>
-          {user?.role === 'ceo' && (
-            <>
-              <Link to="/ceo-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>CEO Dashboard</Link>
-              <Link to="/procurement" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Procurement</Link>
-              <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
-              <Link to="/credit-sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Credit Sales</Link>
-            </>
-          )}
-          {user?.role === 'manager' && (
-            <>
-              <Link to="/manager-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Manager Dashboard</Link>
-              <Link to="/procurement" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Procurement</Link>
-              <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
-              <Link to="/credit-sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Credit Sales</Link>
-            </>
-          )}
-          {user?.role === 'sales_agent' && (
-            <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
-          )}
         </div>
-        <div>
-          <LiveClock />
-          {user ? (
-            <>
-              <span style={{ marginRight: '20px' }}>Welcome, {user.username} ({user.role})</span>
-              <button onClick={handleLogout} style={{ background: '#ff4444', color: '#fff', border: 'none', padding: '5px 10px' }}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Login</Link>
-              <Link to="/signup" style={{ color: '#fff', textDecoration: 'none' }}>Signup</Link>
-            </>
-          )}
+        <div className="form-group">
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+          />
         </div>
-      </div>
-    </nav>
+        <button type="submit" className="form-button">
+          Login
+        </button>
+      </form>
+    </div>
   );
 }
 
-export default NavBar;
+export default Login;

@@ -1,115 +1,116 @@
-import React, { useState, useEffect } from "react";
-import useApi from "../hooks/useApi.js";
-import Charts from "../components/Chart.jsx";
-import ErrorBoundary from "../components/ErrorBoundary.jsx";
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext.jsx';
+import useApi from '../hooks/useApi.js';
+import Chart from '../components/Chart.jsx';
+import ErrorBoundary from '../components/ErrorBoundary.jsx';
 
 function CEODashboard() {
-  const { fetchData, loading, error } = useApi();
-  const [branchFilter, setBranchFilter] = useState('all');
-  const [salesData, setSalesData] = useState([]);
-  const [procurementData, setProcurementData] = useState([]);
-  const [stockData, setStockData] = useState([]);
+  const { user } = useContext(AuthContext);
+  const [branchFilter, setBranchFilter] = useState('All Branches');
 
-  useEffect(function() {
-    async function loadData() {
-      try {
-        const params = branchFilter !== 'all' ? { branch: branchFilter } : {};
-        const [sales, procurement, stock] = await Promise.all([
-          fetchData('/sales', 'GET', null, params),
-          fetchData('/procurement', 'GET', null, params),
-          fetchData('/stock', 'GET', null, params),
-        ]);
-        setSalesData(sales);
-        setProcurementData(procurement);
-        setStockData(stock);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    loadData();
-  }, [branchFilter, fetchData]);
+  const { data: salesData, loading: salesLoading, error: salesError } = useApi(
+    'http://localhost:5000/api/sales',
+    branchFilter === 'All Branches' ? {} : { branch: branchFilter }
+  );
 
-  const salesChartData = {
-    labels: salesData.map(function(sale) { return sale.date; }),
-    datasets: [
-      {
-        label: 'Sales (Tonnage)',
-        data: salesData.map(function(sale) { return sale.tonnage; }),
-        borderColor: 'rgba(75, 192, 192, 1)',
-        fill: false,
-      },
-    ],
-  };
+  const { data: procurementData, loading: procurementLoading, error: procurementError } = useApi(
+    'http://localhost:5000/api/procurement',
+    branchFilter === 'All Branches' ? {} : { branch: branchFilter }
+  );
+
+  const { data: stockData, loading: stockLoading, error: stockError } = useApi(
+    'http://localhost:5000/api/stock',
+    branchFilter === 'All Branches' ? {} : { branch: branchFilter }
+  );
+
+  const salesChartData = salesData ? salesData.map(item => item.amount_paid) : [];
+  const salesChartLabels = salesData ? salesData.map(item => item.date) : [];
+
+  function handleBranchFilter(e) {
+    setBranchFilter(e.target.value);
+  }
 
   return (
     <ErrorBoundary>
-      <div
-        style={{
-          padding: '20px',
-          backgroundImage: 'url(https://images.unsplash.com/photo-1600585154347-4be52e62b1e1)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          minHeight: '100vh',
-          color: '#fff',
-        }}
-      >
-        <h2 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>CEO Dashboard</h2>
-        <div>
-          <label style={{ marginRight: '10px' }}>Filter by Branch: </label>
-          <select value={branchFilter} onChange={function(e) { setBranchFilter(e.target.value); }}>
-            <option value="all">All Branches</option>
-            <option value="Maganjo">Maganjo</option>
-            <option value="Matugga">Matugga</option>
-          </select>
+      <div className="dashboard-grid">
+        <div className="card">
+          <h3>Branch Filter</h3>
+          <div className="form-group">
+            <select value={branchFilter} onChange={handleBranchFilter}>
+              <option value="All Branches">All Branches</option>
+              <option value="Maganjo">Maganjo</option>
+              <option value="Matugga">Matugga</option>
+            </select>
+          </div>
         </div>
-        {loading && <p>Loading...</p>}
-        {error && <p style={{ color: 'red', background: 'rgba(255,255,255,0.8)', padding: '5px' }}>{error}</p>}
-        <h3>Sales Trends</h3>
-        <Charts type="line" data={salesChartData} options={{ responsive: true }} />
-        <h3>Procurement Summary</h3>
-        <table border="1" style={{ background: 'rgba(255,255,255,0.8)', color: '#000' }}>
-          <thead>
-            <tr>
-              <th>Produce</th>
-              <th>Tonnage</th>
-              <th>Cost</th>
-              <th>Branch</th>
-            </tr>
-          </thead>
-          <tbody>
-            {procurementData.map(function(item) {
-              return (
-                <tr key={item.id}>
-                  <td>{item.produce_name}</td>
-                  <td>{item.tonnage}</td>
-                  <td>{item.cost}</td>
-                  <td>{item.branch}</td>
+
+        <div className="chart-container">
+          <Chart title="Sales Trends" labels={salesChartLabels} data={salesChartData} />
+          {salesLoading && <p className="card-subtext">Loading sales data...</p>}
+          {salesError && <p className="card-subtext">{salesError}</p>}
+        </div>
+
+        <div className="card">
+          <h3>Procurement Summary</h3>
+          {procurementLoading && <p className="card-subtext">Loading procurement data...</p>}
+          {procurementError && <p className="card-subtext">{procurementError}</p>}
+          {procurementData && procurementData.length > 0 ? (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Produce Name</th>
+                  <th>Tonnage</th>
+                  <th>Cost (UGX)</th>
+                  <th>Branch</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <h3>Stock Levels</h3>
-        <table border="1" style={{ background: 'rgba(255,255,255,0.8)', color: '#000' }}>
-          <thead>
-            <tr>
-              <th>Produce</th>
-              <th>Branch</th>
-              <th>Quantity</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stockData.map(function(item) {
-              return (
-                <tr key={`${item.produce_id}-${item.branch}`}>
-                  <td>{item.produce_name}</td>
-                  <td>{item.branch}</td>
-                  <td>{item.quantity}</td>
+              </thead>
+              <tbody>
+                {procurementData.map(function(procurement) {
+                  return (
+                    <tr key={procurement.id}>
+                      <td>{procurement.produce_name}</td>
+                      <td>{procurement.tonnage}</td>
+                      <td>{procurement.cost}</td>
+                      <td>{procurement.branch}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <p className="card-subtext">No procurement data available.</p>
+          )}
+        </div>
+
+        <div className="card">
+          <h3>Stock Levels</h3>
+          {stockLoading && <p className="card-subtext">Loading stock data...</p>}
+          {stockError && <p className="card-subtext">{stockError}</p>}
+          {stockData && stockData.length > 0 ? (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Produce Name</th>
+                  <th>Quantity (tons)</th>
+                  <th>Branch</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {stockData.map(function(stock) {
+                  return (
+                    <tr key={stock.id}>
+                      <td>{stock.produce_name}</td>
+                      <td>{stock.quantity}</td>
+                      <td>{stock.branch}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <p className="card-subtext">No stock data available.</p>
+          )}
+        </div>
       </div>
     </ErrorBoundary>
   );

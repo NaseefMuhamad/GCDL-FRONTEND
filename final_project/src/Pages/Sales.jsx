@@ -1,176 +1,182 @@
-import React, { useState, useEffect, useContext } from 'react';
-import useApi from '../hooks/useApi.js';
-import  AuthContext  from '../context/AuthContext.jsx';
+import React, { useState, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext.jsx';
 import FormError from '../components/FormError.jsx';
-import ErrorBoundary from '../components/ErrorBoundary.jsx';
-import jsPDF from 'jspdf';
+import useApi from '../hooks/useApi.js';
+import { jsPDF } from 'jspdf';
 
 function Sales() {
   const { user } = useContext(AuthContext);
-  const { fetchData, loading, error } = useApi();
-  const [sales, setSales] = useState([]);
+  const { data: sales, loading, error, fetchData } = useApi(
+    'http://localhost:5000/api/sales',
+    user?.role !== 'ceo' ? { branch: user?.branch } : {}
+  );
   const [formData, setFormData] = useState({
     produce_name: '',
     tonnage: '',
     amount_paid: '',
     buyer_name: '',
-    date: '',
-    time: '',
+    sales_agent: user?.username || '',
     buyer_contact: '',
+    branch: user?.branch || 'Maganjo',
   });
   const [formErrors, setFormErrors] = useState([]);
-
-  useEffect(function() {
-    async function loadSales() {
-      try {
-        const data = await fetchData('/sales');
-        setSales(data);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    loadSales();
-  }, [fetchData]);
 
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
-  function validateForm() {
-    const errors = [];
-    if (!formData.produce_name) errors.push('Produce name is required');
-    if (!formData.tonnage || isNaN(formData.tonnage) || formData.tonnage <= 0) errors.push('Tonnage must be a positive number');
-    if (!formData.amount_paid || isNaN(formData.amount_paid) || formData.amount_paid <= 0) errors.push('Amount paid must be a positive number');
-    if (!formData.buyer_contact.match(/^\+256\d{9}$/)) errors.push('Buyer contact must be a valid Ugandan phone number (e.g., +256123456789)');
-    return errors;
-  }
-
-  function generateReceipt(sale) {
-    const doc = new jsPDF();
-    doc.text('Golden Crop Distributors Ltd.', 10, 10);
-    doc.text(`Receipt for Sale #${sale.id}`, 10, 20);
-    doc.text(`Produce: ${sale.produce_name}`, 10, 30);
-    doc.text(`Tonnage: ${sale.tonnage}`, 10, 40);
-    doc.text(`Amount Paid: ${sale.amount_paid}`, 10, 50);
-    doc.text(`Buyer: ${sale.buyer_name}`, 10, 60);
-    doc.text(`Date: ${sale.date}`, 10, 70);
-    doc.text(`Branch: ${sale.branch}`, 10, 80);
-    doc.save(`receipt_${sale.id}.pdf`);
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
-    const errors = validateForm();
+    const errors = [];
+    if (!formData.produce_name) errors.push('Produce name is required');
+    if (!formData.tonnage || formData.tonnage <= 0) errors.push('Tonnage must be a positive number');
+    if (!formData.amount_paid || formData.amount_paid <= 0) errors.push('Amount paid must be a positive number');
+    if (!formData.buyer_name) errors.push('Buyer name is required');
+    if (!formData.buyer_contact || !/^\+256\d{9}$/.test(formData.buyer_contact)) {
+      errors.push('Buyer contact must be a valid Ugandan phone number (e.g., +256123456789)');
+    }
     if (errors.length > 0) {
       setFormErrors(errors);
       return;
     }
 
     try {
-      const newSale = await fetchData('/sales', 'POST', {
+      await axios.post('http://localhost:5000/api/sales', {
         ...formData,
-        sales_agent: user.username,
-        branch: user.branch,
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString(),
       });
-      setSales([...sales, newSale]);
       setFormData({
         produce_name: '',
         tonnage: '',
         amount_paid: '',
         buyer_name: '',
-        date: '',
-        time: '',
+        sales_agent: user?.username || '',
         buyer_contact: '',
+        branch: user?.branch || 'Maganjo',
       });
       setFormErrors([]);
-      generateReceipt(newSale);
+      fetchData();
     } catch (err) {
-      console.error(err);
+      setFormErrors([err.response?.data?.message || 'Sales submission failed']);
     }
   }
 
+  function generateReceipt(sale) {
+    const doc = new jsPDF();
+    doc.text('Golden Crop Distributors Ltd.', 10, 10);
+    doc.text('Sales Receipt', 10, 20);
+    doc.text(`Produce: ${sale.produce_name}`, 10, 30);
+    doc.text(`Tonnage: ${sale.tonnage} tons`, 10, 40);
+    doc.text(`Amount Paid: UGX ${sale.amount_paid}`, 10, 50);
+    doc.text(`Buyer: ${sale.buyer_name}`, 10, 60);
+    doc.text(`Sales Agent: ${sale.sales_agent}`, 10, 70);
+    doc.text(`Date: ${sale.date}`, 10, 80);
+    doc.text(`Time: ${sale.time}`, 10, 90);
+    doc.text(`Branch: ${sale.branch}`, 10, 100);
+    doc.save(`${sale.buyer_name}_receipt.pdf`);
+  }
+
   return (
-    <ErrorBoundary>
-      <div style={{ padding: '20px' }}>
+    <div>
+      <div className="form-container">
         <h2>Sales</h2>
-        <h3>Add New Sale</h3>
         <FormError errors={formErrors} />
-        <form onSubmit={handleSubmit} style={{ maxWidth: '500px', marginBottom: '20px' }}>
-          <div style={{ marginBottom: '10px' }}>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
             <label>Produce Name:</label>
-            <input type="text" name="produce_name" value={formData.produce_name} onChange={handleChange} style={{ width: '100%', padding: '5px' }} />
+            <select name="produce_name" value={formData.produce_name} onChange={handleChange}>
+              <option value="">Select Produce</option>
+              <option value="beans">Beans</option>
+              <option value="grain_maize">Grain Maize</option>
+              <option value="cowpeas">Cowpeas</option>
+              <option value="groundnuts">Groundnuts</option>
+              <option value="rice">Rice</option>
+              <option value="soybeans">Soybeans</option>
+            </select>
           </div>
-          <div style={{ marginBottom: '10px' }}>
-            <label>Tonnage:</label>
-            <input type="number" name="tonnage" value={formData.tonnage} onChange={handleChange} style={{ width: '100%', padding: '5px' }} />
+          <div className="form-group">
+            <label>Tonnage (in tons):</label>
+            <input type="number" name="tonnage" value={formData.tonnage} onChange={handleChange} />
           </div>
-          <div style={{ marginBottom: '10px' }}>
-            <label>Amount Paid:</label>
-            <input type="number" name="amount_paid" value={formData.amount_paid} onChange={handleChange} style={{ width: '100%', padding: '5px' }} />
+          <div className="form-group">
+            <label>Amount Paid (UGX):</label>
+            <input type="number" name="amount_paid" value={formData.amount_paid} onChange={handleChange} />
           </div>
-          <div style={{ marginBottom: '10px' }}>
+          <div className="form-group">
             <label>Buyer Name:</label>
-            <input type="text" name="buyer_name" value={formData.buyer_name} onChange={handleChange} style={{ width: '100%', padding: '5px' }} />
+            <input type="text" name="buyer_name" value={formData.buyer_name} onChange={handleChange} />
           </div>
-          <div style={{ marginBottom: '10px' }}>
-            <label>Date:</label>
-            <input type="date" name="date" value={formData.date} onChange={handleChange} style={{ width: '100%', padding: '5px' }} />
+          <div className="form-group">
+            <label>Sales Agent:</label>
+            <input type="text" name="sales_agent" value={formData.sales_agent} disabled />
           </div>
-          <div style={{ marginBottom: '10px' }}>
-            <label>Time:</label>
-            <input type="time" name="time" value={formData.time} onChange={handleChange} style={{ width: '100%', padding: '5px' }} />
-          </div>
-          <div style={{ marginBottom: '10px' }}>
+          <div className="form-group">
             <label>Buyer Contact:</label>
-            <input type="text" name="buyer_contact" value={formData.buyer_contact} onChange={handleChange} style={{ width: '100%', padding: '5px' }} />
+            <input type="text" name="buyer_contact" value={formData.buyer_contact} onChange={handleChange} />
           </div>
-          <button type="submit" style={{ padding: '10px', width: '100%' }}>
-            <img
-              src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
-              alt="Add Icon"
-              style={{ width: '16px', marginRight: '5px', verticalAlign: 'middle' }}
-            />
-            Add Sale
+          <div className="form-group">
+            <label>Branch:</label>
+            <select name="branch" value={formData.branch} onChange={handleChange} disabled={user?.role !== 'ceo'}>
+              <option value="Maganjo">Maganjo</option>
+              <option value="Matugga">Matugga</option>
+            </select>
+          </div>
+          <button type="submit" className="form-button">
+            Submit Sale
           </button>
         </form>
-        <h3>Sales Records</h3>
-        {loading && <p>Loading...</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <table border="1">
-          <thead>
-            <tr>
-              <th>Produce</th>
-              <th>Tonnage</th>
-              <th>Amount Paid</th>
-              <th>Buyer</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sales.map(function(sale) {
-              return (
-                <tr key={sale.id}>
-                  <td>{sale.produce_name}</td>
-                  <td>{sale.tonnage}</td>
-                  <td>{sale.amount_paid}</td>
-                  <td>{sale.buyer_name}</td>
-                  <td>
-                    <button onClick={function() { generateReceipt(sale); }} style={{ display: 'flex', alignItems: 'center' }}>
-                      <img
-                        src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
-                        alt="Download Icon"
-                        style={{ width: '16px', marginRight: '5px' }}
-                      />
-                      Download Receipt
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
       </div>
-    </ErrorBoundary>
+
+      <div className="card">
+        <h3>Sales Records</h3>
+        {loading && <p className="card-subtext">Loading...</p>}
+        {error && <p className="card-subtext">{error}</p>}
+        {sales && sales.length > 0 ? (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Produce Name</th>
+                <th>Tonnage</th>
+                <th>Amount Paid (UGX)</th>
+                <th>Buyer Name</th>
+                <th>Sales Agent</th>
+                <th>Buyer Contact</th>
+                <th>Branch</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sales.map(function(sale) {
+                return (
+                  <tr key={sale.id}>
+                    <td>{sale.produce_name}</td>
+                    <td>{sale.tonnage}</td>
+                    <td>{sale.amount_paid}</td>
+                    <td>{sale.buyer_name}</td>
+                    <td>{sale.sales_agent}</td>
+                    <td>{sale.buyer_contact}</td>
+                    <td>{sale.branch}</td>
+                    <td>{sale.date}</td>
+                    <td>{sale.time}</td>
+                    <td>
+                      <button className="form-button" onClick={function() { generateReceipt(sale); }}>
+                        Generate Receipt
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <p className="card-subtext">No sales records available.</p>
+        )}
+      </div>
+    </div>
   );
 }
 
