@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import Chart from "./Chart";
-import LiveClock from "./LiveClock";
+import Chart from "../components/Chart";
+import LiveClock from "../components/LiveClock";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 

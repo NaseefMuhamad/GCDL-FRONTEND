@@ -1,11 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { useApi } from '../hooks/useApi';
-import FormError from './FormError';
-import LiveClock from './LiveClock';
+import FormError from "../components/FormError";
+
+import LiveClock from "../components/LiveClock";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
-import { createObjectCsvStringifier } from 'csv-writer';
-import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 // Register fonts for pdfmake
@@ -96,18 +95,8 @@ function Sales() {
     pdfMake.createPdf(documentDefinition).download('sales_records.pdf');
   };
 
-  const exportToCSV = async () => {
-    const csvStringifier = createObjectCsvStringifier({
-      header: [
-        { id: 'Produce', title: 'Produce' },
-        { id: 'Tonnage', title: 'Tonnage' },
-        { id: 'AmountPaid', title: 'AmountPaid' },
-        { id: 'Buyer', title: 'Buyer' },
-        { id: 'Agent', title: 'Agent' },
-        { id: 'Contact', title: 'Contact' },
-        { id: 'Date', title: 'Date' },
-      ],
-    });
+  // Replace the current exportToCSV function with the custom code here
+  const exportToCSV = () => {
     const records = data?.data?.map(item => ({
       Produce: item.produceName,
       Tonnage: item.tonnage,
@@ -117,8 +106,26 @@ function Sales() {
       Contact: item.buyerContact,
       Date: item.date,
     })) || [];
-    const csv = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+    // Define CSV headers
+    const headers = ['Produce', 'Tonnage', 'AmountPaid', 'Buyer', 'Agent', 'Contact', 'Date'];
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),  // Add headers as first line
+      ...records.map(record => [
+        record.Produce,
+        record.Tonnage,
+        record.AmountPaid,
+        record.Buyer,
+        record.Agent,
+        record.Contact,
+        record.Date,
+      ].join(',')),  // Join each record's values
+    ].join('\n');  // Join rows with newline
+
+    // Create Blob and save as CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'sales_records.csv');
   };
 
@@ -164,105 +171,7 @@ function Sales() {
         />
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="form">
-        <div className="form-group">
-          <label>Produce Name</label>
-          <select
-            {...register('produceName', { required: 'Produce name is required' })}
-            className="form-input"
-          >
-            <option value="">Select Produce</option>
-            <option value="beans">Beans</option>
-            <option value="grain_maize">Grain Maize</option>
-            <option value="cowpeas">Cowpeas</option>
-            <option value="groundnuts">Groundnuts</option>
-            <option value="rice">Rice</option>
-            <option value="soybeans">Soybeans</option>
-          </select>
-          {errors.produceName && <FormError message={errors.produceName.message} />}
-        </div>
-        <div className="form-group">
-          <label>Tonnage (tons)</label>
-          <input
-            type="number"
-            step="0.1"
-            min="0.1"
-            {...register('tonnage', {
-              required: 'Tonnage is required',
-              min: { value: 0.1, message: 'Minimum 0.1 ton' },
-              valueAsNumber: true,
-            })}
-            className="form-input"
-          />
-          {errors.tonnage && <FormError message={errors.tonnage.message} />}
-        </div>
-        <div className="form-group">
-          <label>Amount Paid (USD)</label>
-          <input
-            type="number"
-            step="0.01"
-            {...register('amountPaid', {
-              required: 'Amount paid is required',
-              min: { value: 0, message: 'Amount cannot be negative' },
-              valueAsNumber: true,
-            })}
-            className="form-input"
-          />
-          {errors.amountPaid && <FormError message={errors.amountPaid.message} />}
-        </div>
-        <div className="form-group">
-          <label>Buyer’s Name</label>
-          <input
-            type="text"
-            {...register('buyerName', { required: 'Buyer’s name is required' })}
-            className="form-input"
-          />
-          {errors.buyerName && <FormError message={errors.buyerName.message} />}
-        </div>
-        <div className="form-group">
-          <label>Sales Agent’s Name</label>
-          <input
-            type="text"
-            {...register('salesAgentName', {
-              required: 'Sales agent’s name is required',
-            })}
-            className="form-input"
-          />
-          {errors.salesAgentName && <FormError message={errors.salesAgentName.message} />}
-        </div>
-        <div className="form-group">
-          <label>Buyer’s Contact</label>
-          <input
-            type="tel"
-            {...register('buyerContact', {
-              required: 'Contact is required',
-              pattern: {
-                value: /^\+?\d{10,12}$/,
-                message: 'Invalid phone number (e.g., +1234567890 or 0734128903)',
-              },
-            })}
-            className="form-input"
-            placeholder="0734128903"
-          />
-          {errors.buyerContact && <FormError message={errors.buyerContact.message} />}
-        </div>
-        <div className="form-group">
-          <label>Date</label>
-          <input
-            type="date"
-            {...register('date', { required: 'Date is required' })}
-            className="form-input"
-          />
-          {errors.date && <FormError message={errors.date.message} />}
-        </div>
-        <div className="form-group">
-          <label>Time</label>
-          <input
-            type="time"
-            {...register('time', { required: 'Time is required' })}
-            className="form-input"
-          />
-          {errors.time && <FormError message={errors.time.message} />}
-        </div>
+        {/* Form fields */}
         <button type="submit" className="form-button" disabled={loading}>
           {loading ? 'Submitting...' : 'Submit'}
         </button>
