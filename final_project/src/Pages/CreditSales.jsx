@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useApi } from "../hooks/useApi";
-import FormError from "./FormError";
-import LiveClock from "./LiveClock";
+import FormError from "../components/FormError";
+import LiveClock from "../components/LiveClock";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { createObjectCsvStringifier } from 'csv-writer';
