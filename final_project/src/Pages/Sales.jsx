@@ -1,7 +1,15 @@
-import { useAuth } from '../context/AuthContext';
 import { useForm } from 'react-hook-form';
 import { useApi } from '../hooks/useApi';
 import FormError from '../components/FormError';
+import LiveClock from '../components/LiveClock';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { createObjectCsvStringifier } from 'csv-writer';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+
+// Register fonts for pdfmake
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 function Sales() {
   const {
@@ -14,31 +22,147 @@ function Sales() {
 
   const onSubmit = async (data) => {
     try {
-      // Log form data for debugging
       console.log('Form data:', data);
-
-      // Sanitize payload
       const payload = {
-        produceId: parseInt(data.produceId),
+        produceName: String(data.produceName),
         tonnage: parseFloat(data.tonnage),
         amountPaid: parseFloat(data.amountPaid),
         buyerName: String(data.buyerName),
-        salesAgentId: String(data.salesAgentId),
+        salesAgentName: String(data.salesAgentName),
         date: String(data.date),
         time: String(data.time),
-        buyerContact: String(data.buyerContact), // Ensure string
+        buyerContact: String(data.buyerContact),
       };
+      const response = await execute(payload, 'POST');
 
-      await execute(payload, 'POST');
+      // Update stock
+      await execute({
+        produceName: payload.produceName,
+        tonnage: -payload.tonnage,
+      }, 'POST', 'stock/update');
+
+      // Generate receipt
+      generateReceipt(response.data);
+
       reset();
     } catch (err) {
       console.error('Submit error:', err);
     }
   };
 
+  const generateReceipt = (saleData) => {
+    const documentDefinition = {
+      content: [
+        { text: 'Golden Crop Sales Receipt', style: 'header' },
+        { text: Sale ID: ${saleData.id}, margin: [0, 20, 0, 10] },
+        { text: Produce: ${saleData.produceName}, margin: [0, 0, 0, 10] },
+        { text: Tonnage: ${saleData.tonnage} tons, margin: [0, 0, 0, 10] },
+        { text: Amount Paid: $${saleData.amountPaid}, margin: [0, 0, 0, 10] },
+        { text: Buyer: ${saleData.buyerName}, margin: [0, 0, 0, 10] },
+        { text: Agent: ${saleData.salesAgentName}, margin: [0, 0, 0, 10] },
+        { text: Contact: ${saleData.buyerContact}, margin: [0, 0, 0, 10] },
+        { text: Date: ${saleData.date} ${saleData.time}, margin: [0, 0, 0, 10] },
+      ],
+      styles: {
+        header: {
+          fontSize: 20,
+          bold: true,
+          margin: [0, 0, 0, 20],
+        },
+      },
+    };
+    pdfMake.createPdf(documentDefinition).download(receipt_${saleData.id}.pdf);
+  };
+
+  const exportToPDF = () => {
+    const documentDefinition = {
+      content: [
+        { text: 'Sales Records', style: 'header' },
+        {
+          ul: data.map((item, index) => ({
+            text: ${index + 1}. ${item.produceName} | ${item.tonnage} tons | $${item.amountPaid} | ${item.buyerName} | ${item.date},
+            margin: [0, 5, 0, 5],
+          })),
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 16,
+          bold: true,
+          margin: [0, 0, 0, 20],
+        },
+      },
+    };
+    pdfMake.createPdf(documentDefinition).download('sales_records.pdf');
+  };
+
+  const exportToCSV = async () => {
+    const csvStringifier = createObjectCsvStringifier({
+      header: [
+        { id: 'Produce', title: 'Produce' },
+        { id: 'Tonnage', title: 'Tonnage' },
+        { id: 'AmountPaid', title: 'AmountPaid' },
+        { id: 'Buyer', title: 'Buyer' },
+        { id: 'Agent', title: 'Agent' },
+        { id: 'Contact', title: 'Contact' },
+        { id: 'Date', title: 'Date' },
+      ],
+    });
+    const records = data.map(item => ({
+      Produce: item.produceName,
+      Tonnage: item.tonnage,
+      AmountPaid: item.amountPaid,
+      Buyer: item.buyerName,
+      Agent: item.salesAgentName,
+      Contact: item.buyerContact,
+      Date: item.date,
+    }));
+    const csv = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'sales_records.csv');
+  };
+
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sales');
+    worksheet.columns = [
+      { header: 'Produce', key: 'Produce', width: 20 },
+      { header: 'Tonnage', key: 'Tonnage', width: 15 },
+      { header: 'Amount Paid', key: 'AmountPaid', width: 15 },
+      { header: 'Buyer', key: 'Buyer', width: 20 },
+      { header: 'Agent', key: 'Agent', width: 20 },
+      { header: 'Contact', key: 'Contact', width: 20 },
+      { header: 'Date', key: 'Date', width: 15 },
+    ];
+    data.forEach(item => {
+      worksheet.addRow({
+        Produce: item.produceName,
+        Tonnage: item.tonnage,
+        AmountPaid: item.amountPaid,
+        Buyer: item.buyerName,
+        Agent: item.salesAgentName,
+        Contact: item.buyerContact,
+        Date: item.date,
+      });
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, 'sales_records.xlsx');
+  };
+
   return (
     <section className="sales-container">
       <h2 className="sales-title">Sales Management</h2>
+      <div className="live-clock-container">
+        <LiveClock />
+      </div>
+      <div className="page-image-container">
+        <img
+          src="/images/sales-transaction.jpg"
+          alt="Sales Transaction"
+          className="page-image"
+        />
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="form">
         <div className="form-group">
           <label>Produce Name</label>
@@ -146,6 +270,11 @@ function Sales() {
 
       <div className="table-container">
         <h3>Sales Records</h3>
+        <div className="export-buttons">
+          <button onClick={exportToPDF} className="export-button">Export PDF</button>
+          <button onClick={exportToCSV} className="export-button">Export CSV</button>
+          <button onClick={exportToExcel} className="export-button">Export Excel</button>
+        </div>
         {loading && <p>Loading...</p>}
         {error && <p className="form-error">{error}</p>}
         {data && data.length > 0 ? (
