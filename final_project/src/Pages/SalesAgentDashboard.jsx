@@ -1,13 +1,20 @@
 import { useEffect } from "react";
-import Chart from "../components/Chart";
+import Chart from "./Chart";
+import LiveClock from "./LiveClock";
 import { useApi } from "../hooks/useApi";
+import { useAuth } from "../context/AuthContext";
 
 function SalesAgentDashboard() {
-  const { data: analyticsData, loading, error, fetchData } = useApi("/api/analytics");
+  const { user } = useAuth();
+  const { data: analyticsData, loading, error, fetchData } = useApi(/api/analytics?branch=${user.branch});
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  if (user.role !== "sales_agent") {
+    return <div>Access Denied</div>;
+  }
 
   const kpis = analyticsData?.kpis || {
     totalSales: 0,
@@ -25,6 +32,7 @@ function SalesAgentDashboard() {
         borderColor: "#1e40af",
         backgroundColor: "rgba(30, 64, 175, 0.2)",
         fill: true,
+        tension: 0.4,
       },
     ],
   };
@@ -36,14 +44,16 @@ function SalesAgentDashboard() {
         label: "Stock (tons)",
         data: [10, 8, 15],
         backgroundColor: "#1e40af",
+        borderColor: "#1e40af",
+        borderWidth: 1,
       },
     ],
   };
 
   const chartOptions = {
-    responsive: true,
     plugins: {
       legend: { position: "top" },
+      title: { display: true },
     },
   };
 
@@ -52,7 +62,17 @@ function SalesAgentDashboard() {
 
   return (
     <div className="dashboard-container">
-      <h2 className="dashboard-title">Dashboard</h2>
+      <h2 className="dashboard-title">Sales Agent Dashboard</h2>
+      <div className="live-clock-container">
+        <LiveClock />
+      </div>
+      <div className="dashboard-image-container">
+        <img
+          src="/images/sales-team.jpg"
+          alt="Sales Team"
+          className="dashboard-image"
+        />
+      </div>
       <div className="dashboard-kpi-grid">
         <div className="dashboard-kpi-card">
           <h3>Total Sales</h3>
@@ -71,7 +91,7 @@ function SalesAgentDashboard() {
           <p>{kpis.profitMargin.toFixed(1)}%</p>
         </div>
       </div>
-      <div className="dashboard-chart-container">
+      <div className="chart-container">
         <h3>Sales Trend</h3>
         <Chart
           type="line"
@@ -82,7 +102,7 @@ function SalesAgentDashboard() {
           }}
         />
       </div>
-      <div className="dashboard-chart-container">
+      <div className="chart-container">
         <h3>Stock Levels</h3>
         <Chart
           type="bar"
