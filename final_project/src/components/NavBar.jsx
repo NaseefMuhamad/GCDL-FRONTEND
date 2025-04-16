@@ -73,6 +73,7 @@ function Navbar() {
           ) : (
             <>
               <li><NavLink to="/login" className="nav-link">Login</NavLink></li>
+              <li><NavLink to="/signup" className="nav-link">Signup</NavLink></li> {/* ✅ Added Signup link */}
               <li><button onClick={toggleTheme} className="theme-toggle">{theme === 'light' ? '🌙' : '☀'}</button></li>
             </>
           )}
