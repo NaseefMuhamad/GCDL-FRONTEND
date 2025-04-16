@@ -156,7 +156,7 @@ function App() {
         </main>
 
         <footer className="footer">
-          <p>&copy; 2025 Golden Crop Distributors Ltd. All rights reserved.</p>
+          <p>© 2025 Golden Crop Distributors Ltd. All rights reserved.</p>
         </footer>
       </div>
     </Router>

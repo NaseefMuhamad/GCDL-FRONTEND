@@ -1,8 +1,17 @@
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
-import FormError from '../components/FormError';
+import FormError from './FormError';
+import LiveClock from './LiveClock';
 import { toast } from 'react-toastify';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { createObjectCsvStringifier } from 'csv-writer';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+
+// Register fonts for pdfmake
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 function Procurement() {
   const {
@@ -25,9 +34,103 @@ function Procurement() {
     }
   };
 
+  const exportToPDF = () => {
+    const documentDefinition = {
+      content: [
+        { text: 'Procurement Records', style: 'header' },
+        {
+          ul: data.data.map((item, index) => ({
+            text: `${index + 1}. ${item.name} | ${item.type} | ${item.tonnage} tons | $${item.cost} | ${item.dealerName} | ${item.branch} | ${item.date}`,
+            margin: [0, 5, 0, 5],
+          })),
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 16,
+          bold: true,
+          margin: [0, 0, 0, 20],
+        },
+      },
+    };
+    pdfMake.createPdf(documentDefinition).download('procurement_records.pdf');
+  };
+
+  const exportToCSV = async () => {
+    const csvStringifier = createObjectCsvStringifier({
+      header: [
+        { id: 'Produce', title: 'Produce' },
+        { id: 'Type', title: 'Type' },
+        { id: 'Tonnage', title: 'Tonnage' },
+        { id: 'Cost', title: 'Cost' },
+        { id: 'Dealer', title: 'Dealer' },
+        { id: 'Branch', title: 'Branch' },
+        { id: 'Contact', title: 'Contact' },
+        { id: 'SellingPrice', title: 'Selling Price' },
+        { id: 'Date', title: 'Date' },
+      ],
+    });
+    const records = data.data.map(item => ({
+      Produce: item.name,
+      Type: item.type,
+      Tonnage: item.tonnage,
+      Cost: item.cost,
+      Dealer: item.dealerName,
+      Branch: item.branch,
+      Contact: item.contact,
+      SellingPrice: item.sellingPrice,
+      Date: item.date,
+    }));
+    const csv = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'procurement_records.csv');
+  };
+
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Procurement');
+    worksheet.columns = [
+      { header: 'Produce', key: 'Produce', width: 20 },
+      { header: 'Type', key: 'Type', width: 15 },
+      { header: 'Tonnage', key: 'Tonnage', width: 15 },
+      { header: 'Cost', key: 'Cost', width: 15 },
+      { header: 'Dealer', key: 'Dealer', width: 20 },
+      { header: 'Branch', key: 'Branch', width: 15 },
+      { header: 'Contact', key: 'Contact', width: 20 },
+      { header: 'Selling Price', key: 'SellingPrice', width: 15 },
+      { header: 'Date', key: 'Date', width: 15 },
+    ];
+    data.data.forEach(item => {
+      worksheet.addRow({
+        Produce: item.name,
+        Type: item.type,
+        Tonnage: item.tonnage,
+        Cost: item.cost,
+        Dealer: item.dealerName,
+        Branch: item.branch,
+        Contact: item.contact,
+        SellingPrice: item.sellingPrice,
+        Date: item.date,
+      });
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, 'procurement_records.xlsx');
+  };
+
   return (
     <section className="procurement-container">
       <h2 className="procurement-title">Procurement Management</h2>
+      <div className="live-clock-container">
+        <LiveClock />
+      </div>
+      <div className="page-image-container">
+        <img
+          src="/images/procurement-truck.jpg"
+          alt="Procurement Truck"
+          className="page-image"
+        />
+      </div>
       {error && <p className="form-error">{error}</p>}
       <form onSubmit={handleSubmit(onSubmit)} className="form">
         <div className="form-group">
@@ -155,6 +258,11 @@ function Procurement() {
 
       <div className="table-container">
         <h3>Procurement Records</h3>
+        <div className="export-buttons">
+          <button onClick={exportToPDF} className="export-button">Export PDF</button>
+          <button onClick={exportToCSV} className="export-button">Export CSV</button>
+          <button onClick={exportToExcel} className="export-button">Export Excel</button>
+        </div>
         {loading && <p>Loading...</p>}
         {data?.data && data.data.length > 0 ? (
           <>

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useApi } from '../hooks/useApi';
-import FormError from '../components/FormError';
-import LiveClock from '../components/LiveClock';
+import FormError from './FormError';
+import LiveClock from './LiveClock';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { createObjectCsvStringifier } from 'csv-writer';
@@ -54,14 +54,14 @@ function Sales() {
     const documentDefinition = {
       content: [
         { text: 'Golden Crop Sales Receipt', style: 'header' },
-        { text: Sale ID: ${saleData.id}, margin: [0, 20, 0, 10] },
-        { text: Produce: ${saleData.produceName}, margin: [0, 0, 0, 10] },
-        { text: Tonnage: ${saleData.tonnage} tons, margin: [0, 0, 0, 10] },
-        { text: Amount Paid: $${saleData.amountPaid}, margin: [0, 0, 0, 10] },
-        { text: Buyer: ${saleData.buyerName}, margin: [0, 0, 0, 10] },
-        { text: Agent: ${saleData.salesAgentName}, margin: [0, 0, 0, 10] },
-        { text: Contact: ${saleData.buyerContact}, margin: [0, 0, 0, 10] },
-        { text: Date: ${saleData.date} ${saleData.time}, margin: [0, 0, 0, 10] },
+        { text: `Sale ID: ${saleData.id}`, margin: [0, 20, 0, 10] },
+        { text: `Produce: ${saleData.produceName}`, margin: [0, 0, 0, 10] },
+        { text: `Tonnage: ${saleData.tonnage} tons`, margin: [0, 0, 0, 10] },
+        { text: `Amount Paid: $${saleData.amountPaid}`, margin: [0, 0, 0, 10] },
+        { text: `Buyer: ${saleData.buyerName}`, margin: [0, 0, 0, 10] },
+        { text: `Agent: ${saleData.salesAgentName}`, margin: [0, 0, 0, 10] },
+        { text: `Contact: ${saleData.buyerContact}`, margin: [0, 0, 0, 10] },
+        { text: `Date: ${saleData.date} ${saleData.time}`, margin: [0, 0, 0, 10] },
       ],
       styles: {
         header: {
@@ -71,7 +71,7 @@ function Sales() {
         },
       },
     };
-    pdfMake.createPdf(documentDefinition).download(receipt_${saleData.id}.pdf);
+    pdfMake.createPdf(documentDefinition).download(`receipt_${saleData.id}.pdf`);
   };
 
   const exportToPDF = () => {
@@ -80,7 +80,7 @@ function Sales() {
         { text: 'Sales Records', style: 'header' },
         {
           ul: data.map((item, index) => ({
-            text: ${index + 1}. ${item.produceName} | ${item.tonnage} tons | $${item.amountPaid} | ${item.buyerName} | ${item.date},
+            text: `${index + 1}. ${item.produceName} | ${item.tonnage} tons | $${item.amountPaid} | ${item.buyerName} | ${item.date}`,
             margin: [0, 5, 0, 5],
           })),
         },
