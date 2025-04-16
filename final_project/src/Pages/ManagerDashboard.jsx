@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 
 function ManagerDashboard() {
   const { user } = useAuth();
-  const { data: analyticsData, loading, error, fetchData } = useApi(/api/manager-analytics?branch=${user.branch});
+  const { data: analyticsData, loading, error, fetchData } = useApi(`/api/manager-analytics?branch=${user.branch}`);
 
   useEffect(() => {
     fetchData();
