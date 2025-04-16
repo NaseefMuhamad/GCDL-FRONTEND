@@ -1,4 +1,5 @@
-import {useApi} from "../hooks/useApi";
+import { useApi } from "../hooks/useApi";
+import LiveClock from "./LiveClock";
 
 function Stock() {
   const { data, loading, error } = useApi("stock");
@@ -6,6 +7,16 @@ function Stock() {
   return (
     <section className="stock-container">
       <h2 className="stock-title">Stock Management</h2>
+      <div className="live-clock-container">
+        <LiveClock />
+      </div>
+      <div className="page-image-container">
+        <img
+          src="/images/stock-inventory.jpg"
+          alt="Stock Inventory"
+          className="page-image"
+        />
+      </div>
       {loading && <p>Loading...</p>}
       {error && <p className="form-error">{error}</p>}
       {data && data.length > 0 ? (
