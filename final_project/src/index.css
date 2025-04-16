@@ -27,7 +27,7 @@ body {
   --error-bg: rgba(220, 38, 38, 0.1);
 }
 
-/* Color Variables: Dark Theme */
+/* Dark Theme Overrides */
 [data-theme="dark"] {
   --primary: #3b82f6;
   --primary-light: rgba(59, 130, 246, 0.3);
@@ -100,7 +100,7 @@ body {
   font-size: 0.9rem;
 }
 
-/* Profile Dropdown Area */
+/* Profile Dropdown */
 .navbar-profile {
   position: relative;
   cursor: pointer;
@@ -119,7 +119,6 @@ body {
   transform: scale(1.05);
 }
 
-/* Dropdown Box */
 .profile-dropdown {
   position: absolute;
   top: 48px;
@@ -139,7 +138,6 @@ body {
   display: flex;
 }
 
-/* Dropdown Items */
 .profile-dropdown a {
   padding: 12px 16px;
   text-decoration: none;
@@ -155,7 +153,6 @@ body {
   background-color: var(--primary-light);
 }
 
-/* Icon Placeholders for Visual Consistency */
 .profile-dropdown a::before {
   content: '👤';
   display: inline-block;
@@ -172,7 +169,7 @@ body {
   border-top: 1px solid var(--border);
 }
 
-/* Dark Mode Toggle Button */
+/* Theme Toggle */
 .theme-toggle {
   background: none;
   border: none;
@@ -236,7 +233,7 @@ body {
   border-radius: 4px;
 }
 
-/* Layout Containers */
+/* Layout */
 .app-wrapper {
   display: flex;
   flex-direction: column;
@@ -279,18 +276,36 @@ body {
   opacity: 0.8;
 }
 
-/* Page Image & Containers */
+/* Welcome Message & Filters */
+.welcome-message {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.branch-filter {
+  margin-bottom: 1.5rem;
+}
+
+.branch-filter label {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+/* Image Containers */
+.dashboard-image-container,
+.procurement-image-container,
+.creditsales-image-container,
+.login-image-container {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.dashboard-image,
 .page-image {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
-}
-
-.procurement-image-container,
-.creditsales-image-container,
-.login-image-container {
-  text-align: center;
 }
 
 /* Responsive Design */
@@ -339,14 +354,6 @@ body {
   .dashboard-actions {
     flex-direction: column;
     gap: 8px;
-  }
-
-  .dashboard-chart-container {
-    padding: 10px;
-  }
-
-  .dashboard-chart-container h3 {
-    font-size: 1.1rem;
   }
 
   .form-container {
@@ -425,3 +432,4 @@ body {
     display: none;
   }
 }
+c
