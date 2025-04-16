@@ -9,7 +9,7 @@ import SalesAgentDashboard from './pages/SalesAgentDashboard';
 import Stock from './pages/Stock';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import './styles.css';
+import './index.css';
 
 // Protected Route component for role-based access
 function ProtectedRoute({ children, allowedRoles }) {
