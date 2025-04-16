@@ -2,6 +2,11 @@ import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import FormError from '../components/FormError';
+import LiveClock from '../components/LiveClock';
+=========
+import FormError from './FormError';
+import LiveClock from './LiveClock';
+>>>>>>>>> Temporary merge branch 2
 import { toast } from 'react-toastify';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
@@ -31,6 +36,94 @@ function Procurement() {
     } catch (error) {
       toast.error('Failed to record procurement.');
     }
+  };
+
+  const exportToPDF = () => {
+    const documentDefinition = {
+      content: [
+        { text: 'Procurement Records', style: 'header' },
+        {
+          ul: data.data.map((item, index) => ({
+<<<<<<<<< Temporary merge branch 1
+            text: ${index + 1}. ${item.name} | ${item.type} | ${item.tonnage} tons | $${item.cost} | ${item.dealerName} | ${item.branch} | ${item.date},
+=========
+            text: `${index + 1}. ${item.name} | ${item.type} | ${item.tonnage} tons | $${item.cost} | ${item.dealerName} | ${item.branch} | ${item.date}`,
+>>>>>>>>> Temporary merge branch 2
+            margin: [0, 5, 0, 5],
+          })),
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 16,
+          bold: true,
+          margin: [0, 0, 0, 20],
+        },
+      },
+    };
+    pdfMake.createPdf(documentDefinition).download('procurement_records.pdf');
+  };
+
+  const exportToCSV = async () => {
+    const csvStringifier = createObjectCsvStringifier({
+      header: [
+        { id: 'Produce', title: 'Produce' },
+        { id: 'Type', title: 'Type' },
+        { id: 'Tonnage', title: 'Tonnage' },
+        { id: 'Cost', title: 'Cost' },
+        { id: 'Dealer', title: 'Dealer' },
+        { id: 'Branch', title: 'Branch' },
+        { id: 'Contact', title: 'Contact' },
+        { id: 'SellingPrice', title: 'Selling Price' },
+        { id: 'Date', title: 'Date' },
+      ],
+    });
+    const records = data.data.map(item => ({
+      Produce: item.name,
+      Type: item.type,
+      Tonnage: item.tonnage,
+      Cost: item.cost,
+      Dealer: item.dealerName,
+      Branch: item.branch,
+      Contact: item.contact,
+      SellingPrice: item.sellingPrice,
+      Date: item.date,
+    }));
+    const csv = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'procurement_records.csv');
+  };
+
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Procurement');
+    worksheet.columns = [
+      { header: 'Produce', key: 'Produce', width: 20 },
+      { header: 'Type', key: 'Type', width: 15 },
+      { header: 'Tonnage', key: 'Tonnage', width: 15 },
+      { header: 'Cost', key: 'Cost', width: 15 },
+      { header: 'Dealer', key: 'Dealer', width: 20 },
+      { header: 'Branch', key: 'Branch', width: 15 },
+      { header: 'Contact', key: 'Contact', width: 20 },
+      { header: 'Selling Price', key: 'SellingPrice', width: 15 },
+      { header: 'Date', key: 'Date', width: 15 },
+    ];
+    data.data.forEach(item => {
+      worksheet.addRow({
+        Produce: item.name,
+        Type: item.type,
+        Tonnage: item.tonnage,
+        Cost: item.cost,
+        Dealer: item.dealerName,
+        Branch: item.branch,
+        Contact: item.contact,
+        SellingPrice: item.sellingPrice,
+        Date: item.date,
+      });
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, 'procurement_records.xlsx');
   };
 
   return (
