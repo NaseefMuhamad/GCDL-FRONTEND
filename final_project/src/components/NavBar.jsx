@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import LiveClock from './LiveClock';
+import { AuthContext } from '../context/AuthContext.jsx';
+import LiveClock from './LiveClock.jsx';
 
 function NavBar() {
   const { user, logout } = useContext(AuthContext);

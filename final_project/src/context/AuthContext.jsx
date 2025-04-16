@@ -1,41 +1,26 @@
 import React, { createContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 export const AuthContext = createContext();
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useEffect(function() {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    setLoading(false);
   }, []);
 
   async function login(username, password) {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        const userData = {
-          username: data.username,
-          role: data.role,
-          branch: data.branch,
-          token: data.token,
-        };
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-      } else {
-        throw new Error(data.message || 'Login failed');
-      }
+      const response = await axios.post('http://localhost:5000/api/auth/login', { username, password });
+      const userData = response.data;
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
     } catch (error) {
-      throw error;
+      throw new Error(error.response?.data?.message || 'Login failed');
     }
   }
 
@@ -45,10 +30,10 @@ function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export { AuthProvider };
+export default AuthProvider;

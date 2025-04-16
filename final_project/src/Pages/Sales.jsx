@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
-import useApi from '../hooks/useApi';
-import { AuthContext } from '../context/AuthContext';
-import FormErrors from '../components/FormErrors';
-import ErrorBoundary from '../components/ErrorBoundary';
+import useApi from '../hooks/useApi.js';
+import  AuthContext  from '../context/AuthContext.jsx';
+import FormError from '../components/FormError.jsx';
+import ErrorBoundary from '../components/ErrorBoundary.jsx';
 import jsPDF from 'jspdf';
 
 function Sales() {
@@ -20,7 +20,7 @@ function Sales() {
   });
   const [formErrors, setFormErrors] = useState([]);
 
-  useEffect(() => {
+  useEffect(function() {
     async function loadSales() {
       try {
         const data = await fetchData('/sales');
@@ -94,7 +94,7 @@ function Sales() {
       <div style={{ padding: '20px' }}>
         <h2>Sales</h2>
         <h3>Add New Sale</h3>
-        <FormErrors errors={formErrors} />
+        <FormError errors={formErrors} />
         <form onSubmit={handleSubmit} style={{ maxWidth: '500px', marginBottom: '20px' }}>
           <div style={{ marginBottom: '10px' }}>
             <label>Produce Name:</label>
@@ -147,24 +147,26 @@ function Sales() {
             </tr>
           </thead>
           <tbody>
-            {sales.map((sale) => (
-              <tr key={sale.id}>
-                <td>{sale.produce_name}</td>
-                <td>{sale.tonnage}</td>
-                <td>{sale.amount_paid}</td>
-                <td>{sale.buyer_name}</td>
-                <td>
-                  <button onClick={() => generateReceipt(sale)} style={{ display: 'flex', alignItems: 'center' }}>
-                    <img
-                      src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
-                      alt="Download Icon"
-                      style={{ width: '16px', marginRight: '5px' }}
-                    />
-                    Download Receipt
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {sales.map(function(sale) {
+              return (
+                <tr key={sale.id}>
+                  <td>{sale.produce_name}</td>
+                  <td>{sale.tonnage}</td>
+                  <td>{sale.amount_paid}</td>
+                  <td>{sale.buyer_name}</td>
+                  <td>
+                    <button onClick={function() { generateReceipt(sale); }} style={{ display: 'flex', alignItems: 'center' }}>
+                      <img
+                        src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
+                        alt="Download Icon"
+                        style={{ width: '16px', marginRight: '5px' }}
+                      />
+                      Download Receipt
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

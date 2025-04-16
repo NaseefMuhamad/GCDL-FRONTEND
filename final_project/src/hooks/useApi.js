@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../context/AuthContext.jsx';
 
 function useApi() {
   const { user } = useContext(AuthContext);
@@ -10,7 +10,7 @@ function useApi() {
   const api = axios.create({
     baseURL: 'http://localhost:5000/api',
     headers: {
-      Authorization: user ? Bearer ${user.token} : '',
+      Authorization: user ? `Bearer ${user.token}` : '',
     },
   });
 

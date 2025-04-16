@@ -1,18 +1,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import NavBar from './components/NavBar';
-import Footer from './components/Footer';
-import Login from './pages/Login';
-import Signup from './signup';
-import CEODashboard from './pages/CEODashboard';
-import ManagerDashboard from './pages/ManagerDashboard';
-import SalesAgentDashboard from './pages/SalesAgentDashboard';
-import Procurement from './pages/Procurement';
-import Sales from './pages/Sales';
-import CreditSales from './pages/CreditSales';
-import AdminDashboard from './pages/AdminDashboard';
+import  AuthProvider from './context/AuthContext.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import NavBar from './components/NavBar.jsx';
+import Footer from './components/Footer.jsx';
+import Login from './pages/Login.jsx';
+import Signup from './pages/signup.jsx';
+import CEODashboard from './pages/CEODashboard.jsx';
+import ManagerDashboard from './pages/ManagerDashboard.jsx';
+import SalesAgentDashboard from './pages/SalesAgentDashboard.jsx';
+import Procurement from './pages/Procurement.jsx';
+import Sales from './pages/Sales.jsx';
+import CreditSales from './pages/CreditSales.jsx';
+
 
 function App() {
   return (
@@ -71,14 +71,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/admin-dashboard"
-              element={
-                <ProtectedRoute role="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
+            
             <Route path="/" element={<Login />} />
           </Routes>
           <Footer />

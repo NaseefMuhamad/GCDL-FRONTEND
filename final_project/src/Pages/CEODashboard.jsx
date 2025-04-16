@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import useApi from '../hooks/useApi';
-import Charts from '../components/Charts';
-import ErrorBoundary from '../components/ErrorBoundary';
+import React, { useState, useEffect } from "react";
+import useApi from "../hooks/useApi.js";
+import Charts from "../components/Chart.jsx";
+import ErrorBoundary from "../components/ErrorBoundary.jsx";
 
 function CEODashboard() {
   const { fetchData, loading, error } = useApi();
@@ -10,7 +10,7 @@ function CEODashboard() {
   const [procurementData, setProcurementData] = useState([]);
   const [stockData, setStockData] = useState([]);
 
-  useEffect(() => {
+  useEffect(function() {
     async function loadData() {
       try {
         const params = branchFilter !== 'all' ? { branch: branchFilter } : {};
@@ -30,11 +30,11 @@ function CEODashboard() {
   }, [branchFilter, fetchData]);
 
   const salesChartData = {
-    labels: salesData.map(sale => sale.date),
+    labels: salesData.map(function(sale) { return sale.date; }),
     datasets: [
       {
         label: 'Sales (Tonnage)',
-        data: salesData.map(sale => sale.tonnage),
+        data: salesData.map(function(sale) { return sale.tonnage; }),
         borderColor: 'rgba(75, 192, 192, 1)',
         fill: false,
       },
@@ -56,7 +56,7 @@ function CEODashboard() {
         <h2 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>CEO Dashboard</h2>
         <div>
           <label style={{ marginRight: '10px' }}>Filter by Branch: </label>
-          <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
+          <select value={branchFilter} onChange={function(e) { setBranchFilter(e.target.value); }}>
             <option value="all">All Branches</option>
             <option value="Maganjo">Maganjo</option>
             <option value="Matugga">Matugga</option>
@@ -77,14 +77,16 @@ function CEODashboard() {
             </tr>
           </thead>
           <tbody>
-            {procurementData.map((item) => (
-              <tr key={item.id}>
-                <td>{item.produce_name}</td>
-                <td>{item.tonnage}</td>
-                <td>{item.cost}</td>
-                <td>{item.branch}</td>
-              </tr>
-            ))}
+            {procurementData.map(function(item) {
+              return (
+                <tr key={item.id}>
+                  <td>{item.produce_name}</td>
+                  <td>{item.tonnage}</td>
+                  <td>{item.cost}</td>
+                  <td>{item.branch}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         <h3>Stock Levels</h3>
@@ -97,13 +99,15 @@ function CEODashboard() {
             </tr>
           </thead>
           <tbody>
-            {stockData.map((item) => (
-              <tr key={`${item.produce_id}-${item.branch}`}>
-                <td>{item.produce_name}</td>
-                <td>{item.branch}</td>
-                <td>{item.quantity}</td>
-              </tr>
-            ))}
+            {stockData.map(function(item) {
+              return (
+                <tr key={`${item.produce_id}-${item.branch}`}>
+                  <td>{item.produce_name}</td>
+                  <td>{item.branch}</td>
+                  <td>{item.quantity}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

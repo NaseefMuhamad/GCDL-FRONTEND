@@ -4,16 +4,20 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend);
 
-const Charts = ({ type, data, options }) => {
-  const chartComponents = {
-    line: Line,
-    bar: Bar,
-    pie: Pie,
-  };
+const chartComponents = {
+  line: Line,
+  bar: Bar,
+  pie: Pie,
+};
 
+function Charts({ type, data, options }) {
   const ChartComponent = chartComponents[type] || Line;
 
-  return <ChartComponent data={data} options={options} />;
-};
+  return (
+    <div style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: '0 auto' }}>
+      <ChartComponent data={data} options={options} />
+    </div>
+  );
+}
 
 export default Charts;

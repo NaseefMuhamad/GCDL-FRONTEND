@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import useApi from '../hooks/useApi';
-import ErrorBoundary from '../components/ErrorBoundary';
+import useApi from '../hooks/useApi.js';
+import ErrorBoundary from '../components/ErrorBoundary.jsx';
 
 function CreditSales() {
   const { fetchData, loading, error } = useApi();
   const [creditSales, setCreditSales] = useState([]);
 
-  useEffect(() => {
+  useEffect(function() {
     async function loadCreditSales() {
       try {
         const data = await fetchData('/credit-sales');
@@ -27,23 +27,25 @@ function CreditSales() {
         <table border="1">
           <thead>
             <tr>
+              <th>Produce</th>
+              <th>Tonnage</th>
+              <th>Amount Owed</th>
               <th>Buyer</th>
-              <th>National ID</th>
-              <th>Amount Due</th>
-              <th>Due Date</th>
               <th>Branch</th>
             </tr>
           </thead>
           <tbody>
-            {creditSales.map((sale) => (
-              <tr key={sale.id}>
-                <td>{sale.buyer_name}</td>
-                <td>{sale.buyer_national_id}</td>
-                <td>{sale.amount_due}</td>
-                <td>{sale.due_date}</td>
-                <td>{sale.branch}</td>
-              </tr>
-            ))}
+            {creditSales.map(function(sale) {
+              return (
+                <tr key={sale.id}>
+                  <td>{sale.produce_name}</td>
+                  <td>{sale.tonnage}</td>
+                  <td>{sale.amount_owed}</td>
+                  <td>{sale.buyer_name}</td>
+                  <td>{sale.branch}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
