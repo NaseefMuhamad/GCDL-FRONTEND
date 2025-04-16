@@ -13,6 +13,7 @@ import Sales from './pages/Sales';
 import CreditSales from './pages/CreditSales';
 import Stock from './pages/Stock';
 import Login from './Pages/Login';
+import Signup from './Pages/signup'; // ✅ Add this near your other imports
 
 const App = () => {
   const { user } = useAuth();
@@ -44,6 +45,7 @@ const App = () => {
       <Navbar />
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} /> {/* ✅ Add inside <Routes> */}
         <Route
           path="/dashboard"
           element={<ProtectedRoute>{getDashboardRoute()}</ProtectedRoute>}
