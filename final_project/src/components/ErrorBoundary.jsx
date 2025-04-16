@@ -8,18 +8,15 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Error caught in ErrorBoundary:", error, errorInfo);
+    console.error('Error caught by ErrorBoundary:', error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="error-boundary">
-          <h1 className="error-boundary-title">Something went wrong.</h1>
-          <p className="error-boundary-message">{this.state.error?.message || 'An unexpected error occurred.'}</p>
-          <button onClick={() => window.location.reload()} className="btn btn-primary">
-            Reload Page
-          </button>
+        <div>
+          <h2>Something went wrong.</h2>
+          <p>{this.state.error?.message || 'An unexpected error occurred.'}</p>
         </div>
       );
     }

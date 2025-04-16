@@ -1,61 +1,75 @@
-import { useForm } from 'react-hook-form';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import FormError from '../components/FormError';
+import { AuthContext } from '../context/AuthContext';
+import FormErrors from '../components/FormErrors';
 
 function Login() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
-  const { login, error: authError } = useAuth(); // Get authError from context
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState([]);
 
-  const onSubmit = async (data) => {
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setErrors([]);
     try {
-      await login(data);// Call login from AuthContext
-      navigate('/procurement');
+      await login(username, password);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user.role === 'ceo') navigate('/ceo-dashboard');
+      else if (user.role === 'manager') navigate('/manager-dashboard');
+      else if (user.role === 'sales_agent') navigate('/sales-agent-dashboard');
     } catch (err) {
-      // Error is handled in AuthContext, no need to set state here
-      console.error('Login error:', err);
+      setErrors([err.message]);
     }
-  };
+  }
 
   return (
-    <section className="login-container">
-      <h2 className="login-title">Login to GCDL</h2>
-      {authError && <FormError message={authError} />}
-      <form onSubmit={handleSubmit(onSubmit)} className="form">
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            {...register('email', {
-              required: 'Email is required',
-              pattern: {
-                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                message: 'Invalid email address',
-              },
-            })}
-            className="form-input"
-          />
-          {errors.email && <FormError message={errors.email.message} />}
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            {...register('password', { required: 'Password is required' })}
-            className="form-input"
-          />
-          {errors.password && <FormError message={errors.password.message} />}
-        </div>
-        <button type="submit" className="form-button">
-          Login
-        </button>
-      </form>
-    </section>
+    <div
+      style={{
+        padding: '20px',
+        maxWidth: '400px',
+        margin: '0 auto',
+        backgroundImage: 'url(https://images.unsplash.com/photo-1600585154347-4be52e62b1e1)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div style={{ background: 'rgba(255,255,255,0.9)', padding: '20px', borderRadius: '10px' }}>
+        <h2>Login</h2>
+        <FormErrors errors={errors} />
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>Username:</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              style={{ width: '100%', padding: '5px', marginTop: '5px' }}
+            />
+          </div>
+          <div>
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '5px', marginTop: '5px' }}
+            />
+          </div>
+          <button type="submit" style={{ marginTop: '10px', padding: '10px', width: '100%' }}>Login</button>
+        </form>
+        <p>
+          Don't have an account? <a href="/signup">Sign up</a>
+        </p>
+      </div>
+    </div>
   );
 }
 

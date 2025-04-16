@@ -1,119 +1,106 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import LiveClock from "../components/LiveClock";
+import { useNavigate } from 'react-router-dom';
+import FormErrors from './components/FormErrors';
 
+function signup() {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
+  const [branch, setBranch] = useState('');
+  const [errors, setErrors] = useState([]);
 
-function Signup() {
-  const [form, setForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-    role: '',
-    branch_id: '',
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const payload = { ...form };
-    if (form.role === 'ceo') {
-      delete payload.branch_id;
-    }
+    setErrors([]);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', payload);
-      alert('Signup successful!');
-      console.log(res.data);
+      const response = await fetch('http://localhost:5000/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role, branch }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        navigate('/login');
+      } else {
+        throw new Error(data.message || 'Signup failed');
+      }
     } catch (err) {
-      alert(err.response?.data?.error || 'Signup failed!');
-      console.error(err);
+      setErrors([err.message]);
     }
-  };
+  }
 
   return (
-    <section className="signup-container">
-      <h2 className="signup-title">Sign Up to GCDL</h2>
-      <div className="live-clock-container">
-        <LiveClock />
-      </div>
-      <div className="page-image-container">
-        <img
-          src="/images/signup-welcome.jpg"
-          alt="Welcome to GCDL"
-          className="page-image"
-        />
-      </div>
-      <form onSubmit={handleSubmit} className="form">
-        <div className="form-group">
-          <label>Username</label>
-          <input
-            name="username"
-            placeholder="Enter username"
-            value={form.username}
-            onChange={handleChange}
-            className="form-input"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            name="email"
-            placeholder="Enter email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            className="form-input"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            name="password"
-            placeholder="Enter password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            className="form-input"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Role</label>
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="form-input"
-            required
-          >
-            <option value="">Select Role</option>
-            <option value="ceo">CEO</option>
-            <option value="manager">Manager</option>
-            <option value="sales_agent">Sales Agent</option>
-          </select>
-        </div>
-        {form.role !== 'ceo' && (
-          <div className="form-group">
-            <label>Branch ID</label>
+    <div
+      style={{
+        padding: '20px',
+        maxWidth: '400px',
+        margin: '0 auto',
+        backgroundImage: 'url(https://images.unsplash.com/photo-1600585154347-4be52e62b1e1)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div style={{ background: 'rgba(255,255,255,0.9)', padding: '20px', borderRadius: '10px' }}>
+        <h2>Signup</h2>
+        <FormErrors errors={errors} />
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '10px' }}>
+            <label>Username:</label>
             <input
-              name="branch_id"
-              placeholder="Enter Branch ID"
-              value={form.branch_id}
-              onChange={handleChange}
-              className="form-input"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
+              style={{ width: '100%', padding: '5px' }}
             />
           </div>
-        )}
-        <button type="submit" className="form-button">Register</button>
-      </form>
-    </section>
+          <div style={{ marginBottom: '10px' }}>
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '5px' }}
+            />
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <label>Role:</label>
+            <select value={role} onChange={(e) => setRole(e.target.value)} required style={{ width: '100%', padding: '5px' }}>
+              <option value="">Select Role</option>
+              <option value="ceo">CEO</option>
+              <option value="manager">Manager</option>
+              <option value="sales_agent">Sales Agent</option>
+            </select>
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <label>Branch:</label>
+            <select value={branch} onChange={(e) => setBranch(e.target.value)} required style={{ width: '100%', padding: '5px' }}>
+              <option value="">Select Branch</option>
+              <option value="Maganjo">Maganjo</option>
+              <option value="Matugga">Matugga</option>
+            </select>
+          </div>
+          <button type="submit" style={{ padding: '10px', width: '100%' }}>
+            <img
+              src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
+              alt="Signup Icon"
+              style={{ width: '16px', marginRight: '5px', verticalAlign: 'middle' }}
+            />
+            Sign Up
+          </button>
+        </form>
+        <p>
+          Already have an account? <a href="/login">Login</a>
+        </p>
+      </div>
+    </div>
   );
 }
 
-export default Signup;
+export default signup;

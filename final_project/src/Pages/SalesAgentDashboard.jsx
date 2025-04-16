@@ -1,120 +1,72 @@
-import { useEffect } from "react";
-import Chart from "../components/Chart";
-
-import LiveClock from "../components/LiveClock";
-import { useApi } from "../hooks/useApi";
-import { useAuth } from "../context/AuthContext";
+import React, { useState, useEffect, useContext } from 'react';
+import useApi from '../hooks/useApi';
+import { AuthContext } from '../context/AuthContext';
+import ErrorBoundary from '../components/ErrorBoundary';
+import { Link } from 'react-router-dom';
 
 function SalesAgentDashboard() {
-  const { user } = useAuth();
-  const { data: analyticsData, loading, error, fetchData } = useApi(`/api/analytics?branch=${user.branch}`);
+  const { user } = useContext(AuthContext);
+  const { fetchData, loading, error } = useApi();
+  const [sales, setSales] = useState([]);
 
   useEffect(() => {
-    fetchData();
+    async function loadSales() {
+      try {
+        const data = await fetchData('/sales');
+        setSales(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadSales();
   }, [fetchData]);
 
-  if (user.role !== "sales_agent") {
-    return <div>Access Denied</div>;
-  }
-
-  const kpis = analyticsData?.kpis || {
-    totalSales: 0,
-    procurementCosts: 0,
-    stockTurnover: 0,
-    profitMargin: 0,
-  };
-
-  const salesTrend = analyticsData?.salesTrend || {
-    labels: ["Jan", "Feb", "Mar", "Apr"],
-    datasets: [
-      {
-        label: "Sales ($)",
-        data: [5000, 7000, 6000, 8000],
-        borderColor: "#1e40af",
-        backgroundColor: "rgba(30, 64, 175, 0.2)",
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  };
-
-  const stockLevels = analyticsData?.stockLevels || {
-    labels: ["Beans", "Rice", "Maize"],
-    datasets: [
-      {
-        label: "Stock (tons)",
-        data: [10, 8, 15],
-        backgroundColor: "#1e40af",
-        borderColor: "#1e40af",
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const chartOptions = {
-    plugins: {
-      legend: { position: "top" },
-      title: { display: true },
-    },
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
   return (
-    <div className="dashboard-container">
-      <h2 className="dashboard-title">Sales Agent Dashboard</h2>
-      <div className="live-clock-container">
-        <LiveClock />
+    <ErrorBoundary>
+      <div
+        style={{
+          padding: '20px',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1600585154347-4be52e62b1e1)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          minHeight: '100vh',
+          color: '#fff',
+        }}
+      >
+        <h2 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>Sales Agent Dashboard - {user.branch}</h2>
+        <Link to="/sales" style={{ color: '#fff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+          <img
+            src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
+            alt="Add Sale Icon"
+            style={{ width: '16px', marginRight: '5px' }}
+          />
+          Add New Sale
+        </Link>
+        <h3>Your Sales</h3>
+        {loading && <p>Loading...</p>}
+        {error && <p style={{ color: 'red', background: 'rgba(255,255,255,0.8)', padding: '5px' }}>{error}</p>}
+        <table border="1" style={{ background: 'rgba(255,255,255,0.8)', color: '#000' }}>
+          <thead>
+            <tr>
+              <th>Produce</th>
+              <th>Tonnage</th>
+              <th>Amount Paid</th>
+              <th>Buyer</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sales.map((sale) => (
+              <tr key={sale.id}>
+                <td>{sale.produce_name}</td>
+                <td>{sale.tonnage}</td>
+                <td>{sale.amount_paid}</td>
+                <td>{sale.buyer_name}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className="dashboard-image-container">
-        <img
-          src="/images/sales-team.jpg"
-          alt="Sales Team"
-          className="dashboard-image"
-        />
-      </div>
-      <div className="dashboard-kpi-grid">
-        <div className="dashboard-kpi-card">
-          <h3>Total Sales</h3>
-          <p>${kpis.totalSales.toLocaleString()}</p>
-        </div>
-        <div className="dashboard-kpi-card">
-          <h3>Procurement Costs</h3>
-          <p>${kpis.procurementCosts.toLocaleString()}</p>
-        </div>
-        <div className="dashboard-kpi-card">
-          <h3>Stock Turnover</h3>
-          <p>{kpis.stockTurnover.toFixed(2)}</p>
-        </div>
-        <div className="dashboard-kpi-card">
-          <h3>Profit Margin</h3>
-          <p>{kpis.profitMargin.toFixed(1)}%</p>
-        </div>
-      </div>
-      <div className="chart-container">
-        <h3>Sales Trend</h3>
-        <Chart
-          type="line"
-          data={salesTrend}
-          options={{
-            ...chartOptions,
-            plugins: { ...chartOptions.plugins, title: { display: true, text: "Sales Over Time" } },
-          }}
-        />
-      </div>
-      <div className="chart-container">
-        <h3>Stock Levels</h3>
-        <Chart
-          type="bar"
-          data={stockLevels}
-          options={{
-            ...chartOptions,
-            plugins: { ...chartOptions.plugins, title: { display: true, text: "Stock by Produce" } },
-          }}
-        />
-      </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 

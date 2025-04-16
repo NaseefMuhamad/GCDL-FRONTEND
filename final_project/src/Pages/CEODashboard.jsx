@@ -1,174 +1,113 @@
-import { useEffect, useState } from "react";
-import Chart from "../components/Chart"; // Correct path based on your file structure
-import LiveClock from "../components/LiveClock";
-import { useApi } from "../hooks/useApi";
-import { useAuth } from "../context/AuthContext";
+import React, { useState, useEffect } from 'react';
+import useApi from '../hooks/useApi';
+import Charts from '../components/Charts';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 function CEODashboard() {
-  const { user } = useAuth();
-  const [branchFilter, setBranchFilter] = useState("all");
-  const { data: analyticsData, loading, error, execute } = useApi(`/api/ceo-analytics?branch=${branchFilter}`);
+  const { fetchData, loading, error } = useApi();
+  const [branchFilter, setBranchFilter] = useState('all');
+  const [salesData, setSalesData] = useState([]);
+  const [procurementData, setProcurementData] = useState([]);
+  const [stockData, setStockData] = useState([]);
 
   useEffect(() => {
-    execute({}, "GET");
-  }, [execute, branchFilter]);
+    async function loadData() {
+      try {
+        const params = branchFilter !== 'all' ? { branch: branchFilter } : {};
+        const [sales, procurement, stock] = await Promise.all([
+          fetchData('/sales', 'GET', null, params),
+          fetchData('/procurement', 'GET', null, params),
+          fetchData('/stock', 'GET', null, params),
+        ]);
+        setSalesData(sales);
+        setProcurementData(procurement);
+        setStockData(stock);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadData();
+  }, [branchFilter, fetchData]);
 
-  if (user.role !== "ceo") {
-    return <div>Access Denied</div>;
-  }
-
-  const kpis = analyticsData?.kpis || {
-    totalSales: 0,
-    procurementCosts: 0,
-    stockTurnover: 0,
-    userCount: 0,
-  };
-
-  const salesTrend = analyticsData?.salesTrend || {
-    labels: ["Jan", "Feb", "Mar", "Apr"],
+  const salesChartData = {
+    labels: salesData.map(sale => sale.date),
     datasets: [
       {
-        label: "Sales ($)",
-        data: [5000, 7000, 6000, 8000],
-        borderColor: "#1e40af",
-        backgroundColor: "rgba(30, 64, 175, 0.2)",
-        fill: true,
-        tension: 0.4,
+        label: 'Sales (Tonnage)',
+        data: salesData.map(sale => sale.tonnage),
+        borderColor: 'rgba(75, 192, 192, 1)',
+        fill: false,
       },
     ],
   };
-
-  const stockLevels = analyticsData?.stockLevels || {
-    labels: ["Beans", "Rice", "Maize"],
-    datasets: [
-      {
-        label: "Stock (tons)",
-        data: [10, 8, 15],
-        backgroundColor: "#1e40af",
-        borderColor: "#1e40af",
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const procurementTrend = analyticsData?.procurementTrend || {
-    labels: ["Jan", "Feb", "Mar", "Apr"],
-    datasets: [
-      {
-        label: "Procurement ($)",
-        data: [2000, 3000, 2500, 4000],
-        borderColor: "#059669",
-        backgroundColor: "rgba(5, 150, 105, 0.2)",
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  };
-
-  const chartOptions = {
-    plugins: {
-      legend: { position: "top" },
-      title: { display: true },
-    },
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="dashboard-container">
-      <h2 className="dashboard-title">CEO Dashboard</h2>
-      <div className="live-clock-container">
-        <LiveClock />
-      </div>
-      <p className="welcome-message">
-        Welcome, CEO! Here's the overview for{" "}
-        {branchFilter === "all"
-          ? "both branches"
-          : branchFilter.charAt(0).toUpperCase() + branchFilter.slice(1)}
-        .
-      </p>
-      <div className="branch-filter">
-        <label htmlFor="branch-select">Select Branch: </label>
-        <select
-          id="branch-select"
-          value={branchFilter}
-          onChange={(e) => setBranchFilter(e.target.value)}
-          className="form-input"
-        >
-          <option value="all">All Branches</option>
-          <option value="maganjo">Maganjo</option>
-          <option value="matugga">Matugga</option>
-        </select>
-      </div>
-      <div className="dashboard-image-container">
-        <img
-          src="/images/crop-warehouse.jpg"
-          alt="Golden Crop Warehouse"
-          className="dashboard-image"
-        />
-      </div>
-      <div className="dashboard-kpi-grid">
-        <div className="dashboard-kpi-card">
-          <h3>Total Sales</h3>
-          <p>${kpis.totalSales.toLocaleString()}</p>
+    <ErrorBoundary>
+      <div
+        style={{
+          padding: '20px',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1600585154347-4be52e62b1e1)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          minHeight: '100vh',
+          color: '#fff',
+        }}
+      >
+        <h2 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>CEO Dashboard</h2>
+        <div>
+          <label style={{ marginRight: '10px' }}>Filter by Branch: </label>
+          <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
+            <option value="all">All Branches</option>
+            <option value="Maganjo">Maganjo</option>
+            <option value="Matugga">Matugga</option>
+          </select>
         </div>
-        <div className="dashboard-kpi-card">
-          <h3>Procurement Costs</h3>
-          <p>${kpis.procurementCosts.toLocaleString()}</p>
-        </div>
-        <div className="dashboard-kpi-card">
-          <h3>Stock Turnover</h3>
-          <p>{kpis.stockTurnover.toFixed(2)}</p>
-        </div>
-        <div className="dashboard-kpi-card">
-          <h3>Total Users</h3>
-          <p>{kpis.userCount}</p>
-        </div>
-      </div>
-      <div className="chart-container">
-        <h3>Sales Trend</h3>
-        <Chart
-          type="line"
-          data={salesTrend}
-          options={{
-            ...chartOptions,
-            plugins: {
-              ...chartOptions.plugins,
-              title: { display: true, text: "Sales Over Time" },
-            },
-          }}
-        />
-      </div>
-      <div className="chart-container">
+        {loading && <p>Loading...</p>}
+        {error && <p style={{ color: 'red', background: 'rgba(255,255,255,0.8)', padding: '5px' }}>{error}</p>}
+        <h3>Sales Trends</h3>
+        <Charts type="line" data={salesChartData} options={{ responsive: true }} />
+        <h3>Procurement Summary</h3>
+        <table border="1" style={{ background: 'rgba(255,255,255,0.8)', color: '#000' }}>
+          <thead>
+            <tr>
+              <th>Produce</th>
+              <th>Tonnage</th>
+              <th>Cost</th>
+              <th>Branch</th>
+            </tr>
+          </thead>
+          <tbody>
+            {procurementData.map((item) => (
+              <tr key={item.id}>
+                <td>{item.produce_name}</td>
+                <td>{item.tonnage}</td>
+                <td>{item.cost}</td>
+                <td>{item.branch}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         <h3>Stock Levels</h3>
-        <Chart
-          type="bar"
-          data={stockLevels}
-          options={{
-            ...chartOptions,
-            plugins: {
-              ...chartOptions.plugins,
-              title: { display: true, text: "Stock by Produce" },
-            },
-          }}
-        />
+        <table border="1" style={{ background: 'rgba(255,255,255,0.8)', color: '#000' }}>
+          <thead>
+            <tr>
+              <th>Produce</th>
+              <th>Branch</th>
+              <th>Quantity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stockData.map((item) => (
+              <tr key={`${item.produce_id}-${item.branch}`}>
+                <td>{item.produce_name}</td>
+                <td>{item.branch}</td>
+                <td>{item.quantity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className="chart-container">
-        <h3>Procurement Trend</h3>
-        <Chart
-          type="line"
-          data={procurementTrend}
-          options={{
-            ...chartOptions,
-            plugins: {
-              ...chartOptions.plugins,
-              title: { display: true, text: "Procurement Over Time" },
-            },
-          }}
-        />
-      </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 

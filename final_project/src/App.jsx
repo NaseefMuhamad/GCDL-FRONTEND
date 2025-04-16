@@ -1,104 +1,32 @@
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
-import Sales from './pages/Sales';
-import Procurement from './pages/Procurement';
-import CreditSales from './pages/CreditSales';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import NavBar from './components/NavBar';
+import Footer from './components/Footer';
+import Login from './pages/Login';
+import Signup from './signup';
 import CEODashboard from './pages/CEODashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
 import SalesAgentDashboard from './pages/SalesAgentDashboard';
-import Stock from './pages/Stock';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import './index.css';
-
-// Protected Route component for role-based access
-function ProtectedRoute({ children, allowedRoles }) {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/login" />;
-  }
-
-  return children;
-}
+import Procurement from './pages/Procurement';
+import Sales from './pages/Sales';
+import CreditSales from './pages/CreditSales';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
-  const { user, logout } = useAuth();
-
   return (
-    <Router>
-      <div className="app-container">
-        <nav className="navbar">
-          <Link to="/">Home</Link>
-          {user ? (
-            <>
-              {user.role === 'ceo' && (
-                <>
-                  <Link to="/ceo-dashboard">CEO Dashboard</Link>
-                  <Link to="/procurement">Procurement</Link>
-                  <Link to="/sales">Sales</Link>
-                  <Link to="/credit-sales">Credit Sales</Link>
-                  <Link to="/stock">Stock</Link>
-                </>
-              )}
-              {user.role === 'manager' && (
-                <>
-                  <Link to="/manager-dashboard">Manager Dashboard</Link>
-                  <Link to="/procurement">Procurement</Link>
-                  <Link to="/sales">Sales</Link>
-                  <Link to="/credit-sales">Credit Sales</Link>
-                  <Link to="/stock">Stock</Link>
-                </>
-              )}
-              {user.role === 'sales_agent' && (
-                <>
-                  <Link to="/sales-agent-dashboard">Sales Dashboard</Link>
-                  <Link to="/sales">Sales</Link>
-                  <Link to="/credit-sales">Credit Sales</Link>
-                  <Link to="/stock">Stock</Link>
-                </>
-              )}
-              <button onClick={logout} className="nav-button">
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login">Login</Link>
-              <Link to="/signup">Signup</Link>
-            </>
-          )}
-        </nav>
-
-        <main>
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <NavBar />
           <Routes>
-            <Route
-              path="/"
-              element={
-                user ? (
-                  <Navigate to={`/${user.role}-dashboard`} />
-                ) : (
-                  <div className="home-container">
-                    <h1>Welcome to Golden Crop</h1>
-                    <p>Please login or signup to continue.</p>
-                  </div>
-                )
-              }
-            />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route
               path="/ceo-dashboard"
               element={
-                <ProtectedRoute allowedRoles={['ceo']}>
+                <ProtectedRoute role="ceo">
                   <CEODashboard />
                 </ProtectedRoute>
               }
@@ -106,7 +34,7 @@ function App() {
             <Route
               path="/manager-dashboard"
               element={
-                <ProtectedRoute allowedRoles={['manager']}>
+                <ProtectedRoute role="manager">
                   <ManagerDashboard />
                 </ProtectedRoute>
               }
@@ -114,7 +42,7 @@ function App() {
             <Route
               path="/sales-agent-dashboard"
               element={
-                <ProtectedRoute allowedRoles={['sales_agent']}>
+                <ProtectedRoute role="sales_agent">
                   <SalesAgentDashboard />
                 </ProtectedRoute>
               }
@@ -122,7 +50,7 @@ function App() {
             <Route
               path="/procurement"
               element={
-                <ProtectedRoute allowedRoles={['ceo', 'manager']}>
+                <ProtectedRoute role={['ceo', 'manager']}>
                   <Procurement />
                 </ProtectedRoute>
               }
@@ -130,7 +58,7 @@ function App() {
             <Route
               path="/sales"
               element={
-                <ProtectedRoute allowedRoles={['ceo', 'manager', 'sales_agent']}>
+                <ProtectedRoute role={['ceo', 'manager', 'sales_agent']}>
                   <Sales />
                 </ProtectedRoute>
               }
@@ -138,28 +66,25 @@ function App() {
             <Route
               path="/credit-sales"
               element={
-                <ProtectedRoute allowedRoles={['ceo', 'manager', 'sales_agent']}>
+                <ProtectedRoute role={['ceo', 'manager']}>
                   <CreditSales />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/stock"
+              path="/admin-dashboard"
               element={
-                <ProtectedRoute allowedRoles={['ceo', 'manager', 'sales_agent']}>
-                  <Stock />
+                <ProtectedRoute role="admin">
+                  <AdminDashboard />
                 </ProtectedRoute>
               }
             />
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="/" element={<Login />} />
           </Routes>
-        </main>
-
-        <footer className="footer">
-          <p>© 2025 Golden Crop Distributors Ltd. All rights reserved.</p>
-        </footer>
-      </div>
-    </Router>
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
