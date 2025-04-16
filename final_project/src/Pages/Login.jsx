@@ -1,59 +1,66 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import  {AuthContext}  from '../context/AuthContext.jsx';
-import FormError from '../components/FormError.jsx';
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext.jsx';
+import LiveClock from './LiveClock.jsx';
 
-function Login() {
-  const { login } = useContext(AuthContext);
+function NavBar() {
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState([]);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    try {
-      await login(username, password);
-      navigate('/ceo-dashboard');
-    } catch (err) {
-      setErrors([err.message]);
-    }
+  function handleLogout() {
+    logout();
+    navigate('/login');
   }
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '5px' }}>
-      <h2>Login</h2>
-      <FormError errors={errors} />
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Username:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={function(e) { setUsername(e.target.value); }}
-            style={{ width: '100%', padding: '5px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={function(e) { setPassword(e.target.value); }}
-            style={{ width: '100%', padding: '5px' }}
-          />
-        </div>
-        <button type="submit" style={{ padding: '10px', width: '100%' }}>
+    <nav style={{ background: '#333', color: '#fff', padding: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <img
             src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
-            alt="Login Icon"
-            style={{ width: '16px', marginRight: '5px', verticalAlign: 'middle' }}
+            alt="GCDL Logo"
+            style={{ width: '40px', marginRight: '10px' }}
           />
-          Login
-        </button>
-      </form>
-    </div>
+          <Link to="/" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>GCDL</Link>
+          {user?.role === 'ceo' && (
+            <>
+              <Link to="/ceo-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>CEO Dashboard</Link>
+              <Link to="/procurement" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Procurement</Link>
+              <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
+              <Link to="/credit-sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Credit Sales</Link>
+            </>
+          )}
+          {user?.role === 'manager' && (
+            <>
+              <Link to="/manager-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Manager Dashboard</Link>
+              <Link to="/procurement" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Procurement</Link>
+              <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
+              <Link to="/credit-sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Credit Sales</Link>
+            </>
+          )}
+          {user?.role === 'sales_agent' && (
+            <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
+          )}
+        </div>
+        <div>
+          <LiveClock />
+          {user ? (
+            <>
+              <span style={{ marginRight: '20px' }}>Welcome, {user.username} ({user.role})</span>
+              <button onClick={handleLogout} style={{ background: '#ff4444', color: '#fff', border: 'none', padding: '5px 10px' }}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Login</Link>
+              <Link to="/signup" style={{ color: '#fff', textDecoration: 'none' }}>Signup</Link>
+            </>
+          )}
+        </div>
+      </div>
+    </nav>
   );
 }
 
-export default Login;
+export default NavBar;
