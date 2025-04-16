@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import Chart from "../components/Chart";
+import Chart from "./Chart";
+import LiveClock from "./LiveClock";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 
@@ -32,6 +33,7 @@ function CEODashboard() {
         borderColor: "#1e40af",
         backgroundColor: "rgba(30, 64, 175, 0.2)",
         fill: true,
+        tension: 0.4,
       },
     ],
   };
@@ -43,6 +45,8 @@ function CEODashboard() {
         label: "Stock (tons)",
         data: [10, 8, 15],
         backgroundColor: "#1e40af",
+        borderColor: "#1e40af",
+        borderWidth: 1,
       },
     ],
   };
@@ -56,14 +60,15 @@ function CEODashboard() {
         borderColor: "#059669",
         backgroundColor: "rgba(5, 150, 105, 0.2)",
         fill: true,
+        tension: 0.4,
       },
     ],
   };
 
   const chartOptions = {
-    responsive: true,
     plugins: {
       legend: { position: "top" },
+      title: { display: true },
     },
   };
 
@@ -73,6 +78,9 @@ function CEODashboard() {
   return (
     <div className="dashboard-container">
       <h2 className="dashboard-title">CEO Dashboard</h2>
+      <div className="live-clock-container">
+        <LiveClock />
+      </div>
       <p className="welcome-message">Welcome, CEO! Here's the overview for {branchFilter === "all" ? "both branches" : branchFilter.charAt(0).toUpperCase() + branchFilter.slice(1)}.</p>
       <div className="branch-filter">
         <label htmlFor="branch-select">Select Branch: </label>
@@ -112,7 +120,7 @@ function CEODashboard() {
           <p>{kpis.userCount}</p>
         </div>
       </div>
-      <div className="dashboard-chart-container">
+      <div className="chart-container">
         <h3>Sales Trend</h3>
         <Chart
           type="line"
@@ -123,7 +131,7 @@ function CEODashboard() {
           }}
         />
       </div>
-      <div className="dashboard-chart-container">
+      <div className="chart-container">
         <h3>Stock Levels</h3>
         <Chart
           type="bar"
@@ -134,11 +142,11 @@ function CEODashboard() {
           }}
         />
       </div>
-      <div className="dashboard-chart-container">
+      <div className="chart-container">
         <h3>Procurement Trend</h3>
         <Chart
           type="line"
-          data={procurementTrend}
+          data={procurementTrend]
           options={{
             ...chartOptions,
             plugins: { ...chartOptions.plugins, title: { display: true, text: "Procurement Over Time" } },
