@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children, role }) => {
+function ProtectedRoute({ children, role }) {
   const { user, loading } = useContext(AuthContext);
 
   if (loading) return <div>Loading...</div>;
@@ -15,6 +15,6 @@ const ProtectedRoute = ({ children, role }) => {
   }
 
   return children;
-};
+}
 
 export default ProtectedRoute;
