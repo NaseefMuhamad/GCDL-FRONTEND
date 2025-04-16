@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
-import FormError from './FormError';
-import LiveClock from './LiveClock';
+import FormError from "../components/FormError";
+import LiveClock from "../components/LiveClock";
 import { toast } from 'react-toastify';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';

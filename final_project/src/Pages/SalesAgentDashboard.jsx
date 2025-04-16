@@ -1,12 +1,13 @@
 import { useEffect } from "react";
-import Chart from "./Chart";
-import LiveClock from "./LiveClock";
+import Chart from "../components/Chart";
+
+import LiveClock from "../components/LiveClock";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 
 function SalesAgentDashboard() {
   const { user } = useAuth();
-  const { data: analyticsData, loading, error, fetchData } = useApi(/api/analytics?branch=${user.branch});
+  const { data: analyticsData, loading, error, fetchData } = useApi(`/api/analytics?branch=${user.branch}`);
 
   useEffect(() => {
     fetchData();

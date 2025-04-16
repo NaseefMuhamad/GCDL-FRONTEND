@@ -1,5 +1,6 @@
 import { useApi } from "../hooks/useApi";
-import LiveClock from "./LiveClock";
+import LiveClock from "../components/LiveClock";
+
 
 function Stock() {
   const { data, loading, error } = useApi("stock");

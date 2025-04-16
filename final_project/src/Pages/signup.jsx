@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import LiveClock from './LiveClock';
+import LiveClock from "../components/LiveClock";
+
 
 function Signup() {
   const [form, setForm] = useState({
