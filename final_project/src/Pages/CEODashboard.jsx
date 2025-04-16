@@ -1,17 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Chart from "../components/Chart";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 
-function ManagerDashboard() {
+function CEODashboard() {
   const { user } = useAuth();
-  const { data: analyticsData, loading, error, fetchData } = useApi(/api/manager-analytics?branch=${user.branch});
+  const [branchFilter, setBranchFilter] = useState("all");
+  const { data: analyticsData, loading, error, execute } = useApi(/api/ceo-analytics?branch=${branchFilter});
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    execute({}, "GET");
+  }, [execute, branchFilter]);
 
-  if (user.role !== "manager") {
+  if (user.role !== "ceo") {
     return <div>Access Denied</div>;
   }
 
@@ -71,11 +72,25 @@ function ManagerDashboard() {
 
   return (
     <div className="dashboard-container">
-      <h2 className="dashboard-title">Manager Dashboard - {user.branch.charAt(0).toUpperCase() + user.branch.slice(1)}</h2>
+      <h2 className="dashboard-title">CEO Dashboard</h2>
+      <p className="welcome-message">Welcome, CEO! Here's the overview for {branchFilter === "all" ? "both branches" : branchFilter.charAt(0).toUpperCase() + branchFilter.slice(1)}.</p>
+      <div className="branch-filter">
+        <label htmlFor="branch-select">Select Branch: </label>
+        <select
+          id="branch-select"
+          value={branchFilter}
+          onChange={(e) => setBranchFilter(e.target.value)}
+          className="form-input"
+        >
+          <option value="all">All Branches</option>
+          <option value="maganjo">Maganjo</option>
+          <option value="matugga">Matugga</option>
+        </select>
+      </div>
       <div className="dashboard-image-container">
         <img
-          src="/images/branch-office.jpg"
-          alt="Branch Office"
+          src="/images/crop-warehouse.jpg"
+          alt="Golden Crop Warehouse"
           className="dashboard-image"
         />
       </div>
@@ -134,4 +149,4 @@ function ManagerDashboard() {
   );
 }
 
-export default ManagerDashboard;
+export default CEODashboard;
