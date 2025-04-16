@@ -31,7 +31,7 @@ function CreditSales() {
         { text: 'Credit Sales Records', style: 'header' },
         {
           ul: data.map((item, index) => ({
-            text: ${index + 1}. ${item.produceName} | ${item.tonnage} tons | $${item.amountDue} | ${item.buyerName} | ${item.nationalId} | ${item.dueDate},
+            text: `${index + 1}. ${item.produceName} | ${item.tonnage} tons | $${item.amountDue} | ${item.buyerName} | ${item.nationalId} | ${item.dueDate}`,
             margin: [0, 5, 0, 5],
           })),
         },
