@@ -1,12 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
-import FormError from '../components/FormError';
-import LiveClock from '../components/LiveClock';
-=========
 import FormError from './FormError';
 import LiveClock from './LiveClock';
->>>>>>>>> Temporary merge branch 2
 import { toast } from 'react-toastify';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
@@ -26,14 +22,25 @@ function Procurement() {
   } = useForm();
   const [page, setPage] = useState(1);
   const limit = 10;
-  const { data, loading, error, execute } = useApi(procurements?page=${page}&limit=${limit});
+  const { data, loading, error, execute } = useApi(`procurements?page=${page}&limit=${limit}`);
 
   const onSubmit = async (data) => {
     try {
-      await execute(data, 'POST');
+      await execute({
+        produceName: data.produceName,
+        type: data.type,
+        date: data.date,
+        time: data.time,
+        tonnage: parseFloat(data.tonnage),
+        cost: parseFloat(data.cost),
+        dealerName: data.dealerName,
+        branch: data.branch,
+        contact: data.contact,
+        sellingPrice: parseFloat(data.sellingPrice),
+      }, 'POST');
       reset();
       toast.success('Procurement recorded successfully!');
-    } catch (error) {
+    } catch (err) {
       toast.error('Failed to record procurement.');
     }
   };
@@ -43,12 +50,8 @@ function Procurement() {
       content: [
         { text: 'Procurement Records', style: 'header' },
         {
-          ul: data.data.map((item, index) => ({
-<<<<<<<<< Temporary merge branch 1
-            text: ${index + 1}. ${item.name} | ${item.type} | ${item.tonnage} tons | $${item.cost} | ${item.dealerName} | ${item.branch} | ${item.date},
-=========
+          ul: (data?.data || []).map((item, index) => ({
             text: `${index + 1}. ${item.name} | ${item.type} | ${item.tonnage} tons | $${item.cost} | ${item.dealerName} | ${item.branch} | ${item.date}`,
->>>>>>>>> Temporary merge branch 2
             margin: [0, 5, 0, 5],
           })),
         },
@@ -78,7 +81,7 @@ function Procurement() {
         { id: 'Date', title: 'Date' },
       ],
     });
-    const records = data.data.map(item => ({
+    const records = (data?.data || []).map(item => ({
       Produce: item.name,
       Type: item.type,
       Tonnage: item.tonnage,
@@ -108,7 +111,7 @@ function Procurement() {
       { header: 'Selling Price', key: 'SellingPrice', width: 15 },
       { header: 'Date', key: 'Date', width: 15 },
     ];
-    data.data.forEach(item => {
+    (data?.data || []).forEach(item => {
       worksheet.addRow({
         Produce: item.name,
         Type: item.type,
@@ -194,6 +197,7 @@ function Procurement() {
             {...register('tonnage', {
               required: 'Tonnage is required',
               min: { value: 1, message: 'Minimum 1 ton' },
+              valueAsNumber: true,
             })}
             className="form-input"
           />
@@ -204,7 +208,11 @@ function Procurement() {
           <input
             type="number"
             step="0.01"
-            {...register('cost', { required: 'Cost is required', min: 0 })}
+            {...register('cost', {
+              required: 'Cost is required',
+              min: { value: 0, message: 'Cost cannot be negative' },
+              valueAsNumber: true,
+            })}
             className="form-input"
           />
           {errors.cost && <FormError message={errors.cost.message} />}
@@ -253,7 +261,8 @@ function Procurement() {
             step="0.01"
             {...register('sellingPrice', {
               required: 'Selling price is required',
-              min: 0,
+              min: { value: 0, message: 'Selling price cannot be negative' },
+              valueAsNumber: true,
             })}
             className="form-input"
           />
@@ -272,6 +281,7 @@ function Procurement() {
           <button onClick={exportToExcel} className="export-button">Export Excel</button>
         </div>
         {loading && <p>Loading...</p>}
+        {error && <p className="form-error">{error}</p>}
         {data?.data && data.data.length > 0 ? (
           <>
             <table className="table">
@@ -291,7 +301,7 @@ function Procurement() {
               <tbody>
                 {data.data.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.name}</td>
+                    <td>{item.produceName || item.name}</td>
                     <td>{item.type}</td>
                     <td>{item.tonnage}</td>
                     <td>${item.cost}</td>

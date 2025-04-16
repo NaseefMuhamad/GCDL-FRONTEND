@@ -28,12 +28,12 @@ export function useApi(endpoint) {
           },
           cancelToken: source.token,
         });
-        const mappedData = response.data.data.map((item) => ({
+        const mappedData = response.data.data?.map((item) => ({
           ...item,
           dealerName: item.dealer_name,
           sellingPrice: item.selling_price,
           produceName: item.name,
-        }));
+        })) || response.data;
         setData({ ...response.data, data: mappedData });
         setError(null);
       } catch (err) {
@@ -53,16 +53,16 @@ export function useApi(endpoint) {
     setLoading(true);
     try {
       const cleanPayload = {
-        name: String(payload.produceName),
-        type: String(payload.type),
-        date: String(payload.date),
-        time: String(payload.time),
-        tonnage: parseFloat(payload.tonnage),
-        cost: parseFloat(payload.cost),
-        dealer_name: String(payload.dealerName),
-        branch: String(payload.branch),
-        contact: String(payload.contact),
-        selling_price: parseFloat(payload.sellingPrice),
+        name: String(payload.produceName || payload.name || ''),
+        type: String(payload.type || ''),
+        date: String(payload.date || ''),
+        time: String(payload.time || ''),
+        tonnage: parseFloat(payload.tonnage || 0),
+        cost: parseFloat(payload.cost || 0),
+        dealer_name: String(payload.dealerName || payload.dealer_name || ''),
+        branch: String(payload.branch || ''),
+        contact: String(payload.contact || ''),
+        selling_price: parseFloat(payload.sellingPrice || payload.selling_price || 0),
       };
       const response = await axios({
         method,
@@ -75,12 +75,14 @@ export function useApi(endpoint) {
       });
       const newData = {
         ...response.data.data,
-        dealerName: response.data.data.dealer_name,
-        sellingPrice: response.data.data.selling_price,
-        produceName: response.data.data.name,
+        dealerName: response.data.data.dealer_name || response.data.data.dealerName,
+        sellingPrice: response.data.data.selling_price || response.data.data.sellingPrice,
+        produceName: response.data.data.name || response.data.data.produceName,
       };
       setData((prev) =>
-        prev ? { ...prev, data: [...prev.data, newData] } : { data: [newData] }
+        prev && prev.data
+          ? { ...prev, data: [...prev.data, newData] }
+          : { data: [newData] }
       );
       setError(null);
       return response.data;

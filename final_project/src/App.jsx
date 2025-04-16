@@ -1,14 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-import Sales from './components/Sales';
-import Procurement from './components/Procurement';
-import CreditSales from './components/CreditSales';
-import CEODashboard from './components/CEODashboard';
-import ManagerDashboard from './components/ManagerDashboard';
-import SalesAgentDashboard from './components/SalesAgentDashboard';
-import Stock from './components/Stock';
-import Login from './components/Login';
-import Signup from './components/Signup';
+import Sales from './pages/Sales';
+import Procurement from './pages/Procurement';
+import CreditSales from './pages/CreditSales';
+import CEODashboard from './pages/CEODashboard';
+import ManagerDashboard from './pages/ManagerDashboard';
+import SalesAgentDashboard from './pages/SalesAgentDashboard';
+import Stock from './pages/Stock';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import './styles.css';
 
 // Protected Route component for role-based access

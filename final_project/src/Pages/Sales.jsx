@@ -23,7 +23,7 @@ function Sales() {
   const onSubmit = async (data) => {
     try {
       console.log('Form data:', data);
-      const payload = {
+      const salesPayload = {
         produceName: String(data.produceName),
         tonnage: parseFloat(data.tonnage),
         amountPaid: parseFloat(data.amountPaid),
@@ -33,12 +33,12 @@ function Sales() {
         time: String(data.time),
         buyerContact: String(data.buyerContact),
       };
-      const response = await execute(payload, 'POST');
+      const response = await execute(salesPayload, 'POST', 'sales');
 
       // Update stock
       await execute({
-        produceName: payload.produceName,
-        tonnage: -payload.tonnage,
+        produceName: salesPayload.produceName,
+        tonnage: -salesPayload.tonnage,
       }, 'POST', 'stock/update');
 
       // Generate receipt
@@ -79,10 +79,10 @@ function Sales() {
       content: [
         { text: 'Sales Records', style: 'header' },
         {
-          ul: data.map((item, index) => ({
+          ul: data?.data?.map((item, index) => ({
             text: `${index + 1}. ${item.produceName} | ${item.tonnage} tons | $${item.amountPaid} | ${item.buyerName} | ${item.date}`,
             margin: [0, 5, 0, 5],
-          })),
+          })) || [],
         },
       ],
       styles: {
@@ -108,7 +108,7 @@ function Sales() {
         { id: 'Date', title: 'Date' },
       ],
     });
-    const records = data.map(item => ({
+    const records = data?.data?.map(item => ({
       Produce: item.produceName,
       Tonnage: item.tonnage,
       AmountPaid: item.amountPaid,
@@ -116,7 +116,7 @@ function Sales() {
       Agent: item.salesAgentName,
       Contact: item.buyerContact,
       Date: item.date,
-    }));
+    })) || [];
     const csv = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'sales_records.csv');
@@ -134,7 +134,7 @@ function Sales() {
       { header: 'Contact', key: 'Contact', width: 20 },
       { header: 'Date', key: 'Date', width: 15 },
     ];
-    data.forEach(item => {
+    data?.data?.forEach(item => {
       worksheet.addRow({
         Produce: item.produceName,
         Tonnage: item.tonnage,
@@ -277,7 +277,7 @@ function Sales() {
         </div>
         {loading && <p>Loading...</p>}
         {error && <p className="form-error">{error}</p>}
-        {data && data.length > 0 ? (
+        {data?.data?.length > 0 ? (
           <table className="table">
             <thead>
               <tr>
@@ -291,7 +291,7 @@ function Sales() {
               </tr>
             </thead>
             <tbody>
-              {data.map((item) => (
+              {data.data.map((item) => (
                 <tr key={item.id}>
                   <td>{item.produceName}</td>
                   <td>{item.tonnage}</td>
