@@ -15,12 +15,31 @@ function AuthProvider({ children }) {
 
   async function login(username, password) {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { username, password });
+      const response = await axios.post('http://localhost:5000/api/auth/login', 
+        { username:username.trim(), password:password.trim() },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log('Login response:', response.data);
+      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      
       const userData = response.data;
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      return userData; // Return the user data for potential use
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Login failed');
+      // Enhanced error handling
+      const errorMessage = error.response?.data?.message || 
+                         error.response?.data?.error || 
+                         error.message || 
+                         'Login failed';
+      throw new Error(errorMessage);
     }
   }
 
