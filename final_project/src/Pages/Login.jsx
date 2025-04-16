@@ -1,66 +1,85 @@
-import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
-import LiveClock from './LiveClock.jsx';
+import FormError from '../components/FormError.jsx';
 
-function NavBar() {
-  const { user, logout } = useContext(AuthContext);
+function Login() {
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleLogout() {
-    logout();
-    navigate('/login');
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrors([]);
+    
+    // Basic client-side validation
+    if (!username.trim() || !password.trim()) {
+      setErrors(['Please enter both username and password']);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      await login(username, password);
+      navigate('/ceo-dashboard');
+    } catch (err) {
+      setErrors([err.message]);
+    } finally {
+      setIsLoading(false);
+    }
+    // For debugging - remove in production
+    console.error("Login failed:", err);
+
   }
 
   return (
-    <nav style={{ background: '#333', color: '#fff', padding: '10px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img
-            src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
-            alt="GCDL Logo"
-            style={{ width: '40px', marginRight: '10px' }}
+    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '5px' }}>
+      <h2>Login</h2>
+      <FormError errors={errors} />
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Username:</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            style={{ width: '100%', padding: '5px' }}
+            disabled={isLoading}
           />
-          <Link to="/" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>GCDL</Link>
-          {user?.role === 'ceo' && (
-            <>
-              <Link to="/ceo-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>CEO Dashboard</Link>
-              <Link to="/procurement" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Procurement</Link>
-              <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
-              <Link to="/credit-sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Credit Sales</Link>
-            </>
-          )}
-          {user?.role === 'manager' && (
-            <>
-              <Link to="/manager-dashboard" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Manager Dashboard</Link>
-              <Link to="/procurement" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Procurement</Link>
-              <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
-              <Link to="/credit-sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Credit Sales</Link>
-            </>
-          )}
-          {user?.role === 'sales_agent' && (
-            <Link to="/sales" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Sales</Link>
-          )}
         </div>
-        <div>
-          <LiveClock />
-          {user ? (
+        <div style={{ marginBottom: '10px' }}>
+          <label>Password:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ width: '100%', padding: '5px' }}
+            disabled={isLoading}
+          />
+        </div>
+        <button 
+          type="submit" 
+          style={{ padding: '10px', width: '100%' }}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Logging in...' : (
             <>
-              <span style={{ marginRight: '20px' }}>Welcome, {user.username} ({user.role})</span>
-              <button onClick={handleLogout} style={{ background: '#ff4444', color: '#fff', border: 'none', padding: '5px 10px' }}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none' }}>Login</Link>
-              <Link to="/signup" style={{ color: '#fff', textDecoration: 'none' }}>Signup</Link>
+              <img
+                src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1"
+                alt="Login Icon"
+                style={{ width: '16px', marginRight: '5px', verticalAlign: 'middle' }}
+              />
+              Login
             </>
           )}
-        </div>
-      </div>
-    </nav>
+        </button>
+      </form>
+    </div>
   );
 }
 
-export default NavBar;
+export default Login;
