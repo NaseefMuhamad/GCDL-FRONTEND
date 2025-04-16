@@ -6,7 +6,14 @@ import { useAuth } from "../context/AuthContext";
 function CEODashboard() {
   const { user } = useAuth();
   const [branchFilter, setBranchFilter] = useState("all");
-  const { data: analyticsData, loading, error, execute } = useApi(/api/ceo-analytics?branch=${branchFilter});
+
+  // ✅ Fixed template literal for the URL
+  const {
+    data: analyticsData,
+    loading,
+    error,
+    execute,
+  } = useApi(`/api/ceo-analytics?branch=${branchFilter}`);
 
   useEffect(() => {
     execute({}, "GET");
@@ -73,7 +80,13 @@ function CEODashboard() {
   return (
     <div className="dashboard-container">
       <h2 className="dashboard-title">CEO Dashboard</h2>
-      <p className="welcome-message">Welcome, CEO! Here's the overview for {branchFilter === "all" ? "both branches" : branchFilter.charAt(0).toUpperCase() + branchFilter.slice(1)}.</p>
+      <p className="welcome-message">
+        Welcome, CEO! Here's the overview for{" "}
+        {branchFilter === "all"
+          ? "both branches"
+          : branchFilter.charAt(0).toUpperCase() + branchFilter.slice(1)}
+        .
+      </p>
       <div className="branch-filter">
         <label htmlFor="branch-select">Select Branch: </label>
         <select
@@ -87,6 +100,7 @@ function CEODashboard() {
           <option value="matugga">Matugga</option>
         </select>
       </div>
+
       <div className="dashboard-image-container">
         <img
           src="/images/crop-warehouse.jpg"
@@ -94,6 +108,7 @@ function CEODashboard() {
           className="dashboard-image"
         />
       </div>
+
       <div className="dashboard-kpi-grid">
         <div className="dashboard-kpi-card">
           <h3>Total Sales</h3>
@@ -112,6 +127,7 @@ function CEODashboard() {
           <p>{kpis.userCount}</p>
         </div>
       </div>
+
       <div className="dashboard-chart-container">
         <h3>Sales Trend</h3>
         <Chart
@@ -119,10 +135,14 @@ function CEODashboard() {
           data={salesTrend}
           options={{
             ...chartOptions,
-            plugins: { ...chartOptions.plugins, title: { display: true, text: "Sales Over Time" } },
+            plugins: {
+              ...chartOptions.plugins,
+              title: { display: true, text: "Sales Over Time" },
+            },
           }}
         />
       </div>
+
       <div className="dashboard-chart-container">
         <h3>Stock Levels</h3>
         <Chart
@@ -130,10 +150,14 @@ function CEODashboard() {
           data={stockLevels}
           options={{
             ...chartOptions,
-            plugins: { ...chartOptions.plugins, title: { display: true, text: "Stock by Produce" } },
+            plugins: {
+              ...chartOptions.plugins,
+              title: { display: true, text: "Stock by Produce" },
+            },
           }}
         />
       </div>
+
       <div className="dashboard-chart-container">
         <h3>Procurement Trend</h3>
         <Chart
@@ -141,7 +165,10 @@ function CEODashboard() {
           data={procurementTrend}
           options={{
             ...chartOptions,
-            plugins: { ...chartOptions.plugins, title: { display: true, text: "Procurement Over Time" } },
+            plugins: {
+              ...chartOptions.plugins,
+              title: { display: true, text: "Procurement Over Time" },
+            },
           }}
         />
       </div>
