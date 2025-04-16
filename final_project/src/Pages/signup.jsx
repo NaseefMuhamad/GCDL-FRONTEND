@@ -8,7 +8,7 @@ function Signup() {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
-    role: 'sales_agent',
+    role: 'sales_agent', // Fixed role
     branch: 'Maganjo',
   });
   const [formErrors, setFormErrors] = useState([]);
@@ -24,7 +24,6 @@ function Signup() {
     if (!formData.password || formData.password.length < 6) {
       errors.push('Password must be at least 6 characters');
     }
-    if (!formData.role) errors.push('Role is required');
     if (!formData.branch) errors.push('Branch is required');
     if (errors.length > 0) {
       setFormErrors(errors);
@@ -64,10 +63,8 @@ function Signup() {
         </div>
         <div className="form-group">
           <label>Role:</label>
-          <select name="role" value={formData.role} onChange={handleChange}>
+          <select name="role" value={formData.role} disabled>
             <option value="sales_agent">Sales Agent</option>
-            <option value="manager">Manager</option>
-            <option value="ceo">CEO</option>
           </select>
         </div>
         <div className="form-group">
