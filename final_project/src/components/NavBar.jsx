@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext.jsx';
 import LiveClock from './LiveClock.jsx';
+import logo from '../assets/react.svg'; // Local image
 
 function NavBar() {
   const context = useContext(AuthContext);
@@ -18,7 +19,7 @@ function NavBar() {
   return (
     <nav className="navbar">
       <div className="navbar-logo">
-        <img src="https://images.unsplash.com/photo-1600585154347-4be52e62b1e1" alt="GCDL Logo" />
+        <img src={logo} alt="GCDL Logo" />
         <Link to="/">GCDL</Link>
       </div>
       <div className="navbar-links">
