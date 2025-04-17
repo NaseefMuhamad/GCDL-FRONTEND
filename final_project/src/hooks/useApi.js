@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext.jsx';
+import AuthContext from '../context/AuthContext.jsx'; // Changed to default import
 
 function useApi() {
   const { user } = useContext(AuthContext);

@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext.jsx';
+import  AuthContext  from '../context/AuthContext.jsx';
 import useApi from '../hooks/useApi.js';
 import Chart from '../components/Chart.jsx';
 import ErrorBoundary from '../components/ErrorBoundary.jsx';

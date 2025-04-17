@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
-import  AuthProvider  from './context/AuthContext';
+import  {AuthProvider}  from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 import { ToastContainer } from 'react-toastify';

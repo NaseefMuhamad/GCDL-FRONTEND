@@ -1,15 +1,18 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext.jsx';
+import AuthContext from '../context/AuthContext.jsx';
 import LiveClock from './LiveClock.jsx';
 
 function NavBar() {
-  const { user, logout } = useContext(AuthContext);
+  const context = useContext(AuthContext);
+  const { user, logout } = context || { user: null, logout: () => {} };
   const navigate = useNavigate();
 
   function handleLogout() {
-    logout();
-    navigate('/login');
+    if (logout) {
+      logout();
+      navigate('/login');
+    }
   }
 
   return (
@@ -25,6 +28,7 @@ function NavBar() {
             <Link to="/procurement">Procurement</Link>
             <Link to="/sales">Sales</Link>
             <Link to="/credit-sales">Credit Sales</Link>
+            <Link to="/UserManagement">UserManagement</Link>
           </>
         )}
         {user?.role === 'manager' && (
@@ -43,7 +47,7 @@ function NavBar() {
         <LiveClock />
         {user ? (
           <>
-            <span>Welcome, {user.username} ({user.role})</span>
+            <span>Welcome, {user.email || 'User'} ({user.role || ''})</span>
             <button onClick={handleLogout} className="navbar-button logout">
               Logout
             </button>

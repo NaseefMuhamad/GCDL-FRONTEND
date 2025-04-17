@@ -1,50 +1,55 @@
-import React, { useState, useContext } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext.jsx';
-import FormError from '../components/FormError.jsx';
+import FormError from '../components/FormError';
+import { useContext } from 'react';
+import AuthContext from '../context/AuthContext.jsx';
 
 function Login() {
-  const { login } = useContext(AuthContext);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const context = useContext(AuthContext);
+  const { login, error: authError } = context || { login: async () => {}, error: null };
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ username: '', password: '' });
-  const [error, setError] = useState('');
 
-  function handleChange(e) {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      await login(formData.username, formData.password);
-      navigate('/ceo-dashboard'); // Redirect to a default dashboard; adjust as needed
+      await login(data);
+      navigate('/procurement');
     } catch (err) {
-      setError(err.message);
+      console.error('Login error:', err);
     }
-  }
+  };
 
   return (
     <div className="form-container">
-      <h2>Login</h2>
-      {error && <FormError errors={[error]} />}
-      <form onSubmit={handleSubmit}>
+      <h2>Login to GCDL</h2>
+      <p className="card-subtext">"With GOD NOTHING CAN STAND IN OUR WAY"</p>
+      {authError && <FormError message={authError} />}
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="form-group">
-          <label>Username:</label>
+          <label>Email</label>
           <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
+            type="email"
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                message: 'Invalid email address',
+              },
+            })}
           />
+          {errors.email && <FormError message={errors.email.message} />}
         </div>
         <div className="form-group">
-          <label>Password:</label>
+          <label>Password</label>
           <input
             type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
+            {...register('password', { required: 'Password is required' })}
           />
+          {errors.password && <FormError message={errors.password.message} />}
         </div>
         <button type="submit" className="form-button">
           Login
